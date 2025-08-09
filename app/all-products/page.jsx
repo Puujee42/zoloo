@@ -1,28 +1,142 @@
+// Likely at: app/seller/add-product/page.jsx
+
 'use client'
-import ProductCard from "@/components/ProductCard";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import React, { useState } from "react";
+import { assets } from "@/assets/assets";
+import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
+import axios from "axios"; // FIX: Import axios
+import toast from "react-hot-toast"; // FIX: Import react-hot-toast
 
-const AllProducts = () => {
+const AddProduct = () => {
+    // FIX: Corrected typo from getToken
+    const { getToken } = useAppContext(); 
+    
+    // Your state management is perfect
+    const [files, setFiles] = useState([]);
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [category, setCategory] = useState('Model');
+    const [price, setPrice] = useState('');
+    const [offerPrice, setOfferPrice] = useState('');
+    const [isUploading, setIsUploading] = useState(false); // Add a loading state
 
-    const { products } = useAppContext();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsUploading(true); // Start loading
+
+        // FIX: Correct capitalization to new FormData()
+        const formData = new FormData(); 
+        formData.append('name', name);
+        formData.append('description', description);
+        formData.append('category', category);
+        formData.append('price', price);
+        formData.append('offerPrice', offerPrice);
+
+        // Filter out any empty spots and append the files
+        const validFiles = files.filter(file => file);
+        if (validFiles.length === 0) {
+            toast.error("Please select at least one image.");
+            setIsUploading(false);
+            return;
+        }
+
+        for (let i = 0; i < validFiles.length; i++) {
+            // FIX: Append to 'formData' and use the correct field name 'images'
+            formData.append('images', validFiles[i]); 
+        }
+
+        try {
+            const token = await getToken();
+            const { data } = await axios.post('/api/seller/products', formData, { // Assuming this is your backend route
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (data.success) {
+                toast.success(data.message);
+                // Reset the form state
+                setFiles([]);
+                setName('');
+                setDescription('');
+                setCategory('Model');
+                setPrice('');
+                setOfferPrice('');
+            } else {
+                // FIX: Use data.message for the error toast
+                toast.error(data.message); 
+            }
+        } catch (error) {
+            // Provide a more descriptive error message
+            toast.error(error.response?.data?.message || 'An unexpected error occurred.');
+            console.error("Upload failed:", error);
+        } finally {
+            setIsUploading(false); // Stop loading
+        }
+    };
 
     return (
-        <>
-            <Navbar />
-            <div className="flex flex-col items-start px-6 md:px-16 lg:px-32">
-                <div className="flex flex-col items-end pt-12">
-                    <p className="text-2xl font-medium">All products</p>
-                    <div className="w-16 h-0.5 bg-orange-600 rounded-full"></div>
+        <div className="flex-1 min-h-screen flex flex-col justify-between">
+            {/* The rest of your JSX is excellent, but we will disable the button while uploading */}
+            <form onSubmit={handleSubmit} className="md:p-10 p-4 space-y-5 max-w-lg">
+                {/* ... your image upload section is great ... */}
+                <div>
+                    <p className="text-base font-medium">Product Image</p>
+                    <div className="flex flex-wrap items-center gap-3 mt-2">
+                        {[...Array(4)].map((_, index) => (
+                            <label key={index} htmlFor={`image${index}`}>
+                                <input onChange={(e) => {
+                                    const updatedFiles = [...files];
+                                    updatedFiles[index] = e.target.files[0];
+                                    setFiles(updatedFiles);
+                                }} type="file" id={`image${index}`} hidden />
+                                <Image
+                                    className="max-w-24 cursor-pointer object-cover aspect-square"
+                                    src={files[index] ? URL.createObjectURL(files[index]) : assets.upload_area}
+                                    alt=""
+                                    width={100}
+                                    height={100}
+                                />
+                            </label>
+                        ))}
+                    </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 flex-col items-center gap-6 mt-12 pb-14 w-full">
-                    {products.map((product, index) => <ProductCard key={index} product={product} />)}
+                {/* ... your form inputs are perfect ... */}
+                <div className="flex flex-col gap-1 max-w-md">
+                    <label className="text-base font-medium" htmlFor="product-name">Product Name</label>
+                    <input id="product-name" type="text" placeholder="Type here" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40" onChange={(e) => setName(e.target.value)} value={name} required />
                 </div>
-            </div>
-            <Footer />
-        </>
+                <div className="flex flex-col gap-1 max-w-md">
+                    <label className="text-base font-medium" htmlFor="product-description">Product Description</label>
+                    <textarea id="product-description" rows={4} className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 resize-none" placeholder="Type here" onChange={(e) => setDescription(e.target.value)} value={description} required ></textarea>
+                </div>
+                <div className="flex items-center gap-5 flex-wrap">
+                    <div className="flex flex-col gap-1 w-32">
+                        <label className="text-base font-medium" htmlFor="category">Category</label>
+                        <select id="category" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40" onChange={(e) => setCategory(e.target.value)} value={category}>
+                            <option value="Model">Model</option>
+                            <option value="Headphone">Headphone</option>
+                            <option value="Watch">Watch</option>
+                            <option value="Smartphone">Smartphone</option>
+                            <option value="Laptop">Laptop</option>
+                            <option value="Camera">Camera</option>
+                            <option value="Accessories">Accessories</option>
+                        </select>
+                    </div>
+                    <div className="flex flex-col gap-1 w-32">
+                        <label className="text-base font-medium" htmlFor="product-price">Product Price</label>
+                        <input id="product-price" type="number" placeholder="0" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40" onChange={(e) => setPrice(e.target.value)} value={price} required />
+                    </div>
+                    <div className="flex flex-col gap-1 w-32">
+                        <label className="text-base font-medium" htmlFor="offer-price">Offer Price</label>
+                        <input id="offer-price" type="number" placeholder="0" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40" onChange={(e) => setOfferPrice(e.target.value)} value={offerPrice} required />
+                    </div>
+                </div>
+                <button type="submit" disabled={isUploading} className="px-8 py-2.5 bg-orange-600 text-white font-medium rounded disabled:bg-gray-400">
+                    {isUploading ? "Uploading..." : "ADD"}
+                </button>
+            </form>
+        </div>
     );
 };
 
-export default AllProducts;
+export default AddProduct;
