@@ -1,49 +1,34 @@
-// /app/api/seller/products/route.js
+// FILE: /app/api/product/add/route.js
 
 import connectDB from "@/config/db";
-import Product from "@/models/Product";
-import { getAuth } from "@clerk/nextjs/server"; // This is the key for security
+import Product from "@/models/Product"; // Make sure your Product model is imported
+import { getAuth } from "@clerk/nextjs/server";
 import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 
-// Your Cloudinary config is perfect
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
+// ... (cloudinary config)
 
 export async function POST(request) {
     try {
-        // --- THIS IS THE NEW, MORE SECURE AUTHENTICATION ---
         const { userId, sessionClaims } = getAuth(request);
 
-        // 1. First, check if the user is even logged in.
         if (!userId) {
             return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
         }
-
-        // 2. Second, check if their role in Clerk's metadata is 'seller'.
-        // This is the most secure way to check permission.
-        if (sessionClaims?.metadata?.role !== 'seller') {
+        if (sessionClaims?.role !== 'seller') {
             return NextResponse.json({ success: false, message: 'Forbidden: Access denied.' }, { status: 403 });
         }
-        // --- END OF SECURITY REFACTOR ---
-
 
         const formData = await request.formData();
+        // ... (get all form data fields)
         const name = formData.get('name');
         const description = formData.get('description');
         const category = formData.get('category');
         const price = formData.get('price');
         const offerPrice = formData.get('offerPrice');
         const files = formData.getAll('images');
-
-        // The rest of your file upload and database logic is excellent.
-        if (!files || files.length === 0) {
-            return NextResponse.json({ success: false, message: 'No images were provided.' }, { status: 400 });
-        }
-
+        
+        // ... (image upload logic)
         const uploadResults = await Promise.all(
             files.map(async (file) => {
                 const arrayBuffer = await file.arrayBuffer();
@@ -59,6 +44,8 @@ export async function POST(request) {
         const imageUrls = uploadResults.map(result => result.secure_url);
 
         await connectDB();
+
+        // --- THE FINAL FIX IS HERE ---
         const newProduct = {
             name,
             description,
@@ -66,11 +53,14 @@ export async function POST(request) {
             price,
             offerPrice,
             images: imageUrls,
-            sellerId: userId // Linking the product to the seller is great practice
+            userId: userId, // Add the authenticated user's ID
+            date: new Date()  // Add the current date
         };
+        // --- END OF FIX ---
+
         await Product.create(newProduct);
 
-        return NextResponse.json({ success: true, message: 'Product created successfully' });
+        return NextResponse.json({ success: true, message: 'Product Created Successfully' });
 
     } catch (error) {
         console.error("Error creating product:", error);

@@ -40,6 +40,8 @@ export const AppContextProvider = (props) => {
             } else {
                 setIsSeller(false);
             }
+           //setIsSeller(true)
+
 
             const token = await getToken();
             const { data } = await axios.get('/api/user/data', {
