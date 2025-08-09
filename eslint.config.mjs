@@ -1,14 +1,20 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+// eslint.config.mjs
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import next from 'eslint-config-next';
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+/** @type {import('eslint').Linter.Config[]} */
+const config = [
+  // The official Next.js config includes everything you need
+  // for your project, including Core Web Vitals rules.
+  next,
 
-const eslintConfig = [...compat.extends("next/core-web-vitals")];
+  // You can add your own custom rules here later if you want.
+  // For now, keeping it simple is best.
+  {
+    rules: {
+      // example: semi: ["error", "always"]
+    },
+  },
+];
 
-export default eslintConfig;
+export default config;
