@@ -1,7 +1,4 @@
-// context/AppContext.jsx
-
 'use client'
-import { productsDummyData } from "@/assets/assets";
 import { useAuth, useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -24,24 +21,30 @@ export const AppContextProvider = (props) => {
     const [userData, setUserData] = useState(null);
     const [isSeller, setIsSeller] = useState(false);
     const [cartItems, setCartItems] = useState({});
-    const [isLoading, setIsLoading] = useState(true); // Simplified to one loading state
+    const [isLoading, setIsLoading] = useState(true);
 
+    // Fetch real product data from backend
     const fetchProductData = async () => {
-        setProducts(productsDummyData);
+        try {
+            const {data} = await axios.get('/api/product/list')
+            if (data.success) {
+                setProducts(data.products)
+            }else{
+                toast.error(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
     }
 
     const fetchBackendUserData = async () => {
-        if (!user) return; // Should not happen due to the useEffect logic, but it's a safe guard
-
+        if (!user) return;
         try {
-            // This logic to check role remains perfect
             if (user.publicMetadata.role === 'seller') {
                 setIsSeller(true);
             } else {
                 setIsSeller(false);
             }
-           //setIsSeller(true)
-
 
             const token = await getToken();
             const { data } = await axios.get('/api/user/data', {
@@ -53,61 +56,85 @@ export const AppContextProvider = (props) => {
                 setCartItems(data.user.cartItems || {});
             } else {
                 toast.error(data.message);
-                setUserData(null); // Clear data if user not found in our DB
+                setUserData(null);
             }
         } catch (error) {
             toast.error('API Error: ' + error.message);
-            setUserData(null); // Clear data on any API error
+            setUserData(null);
         } finally {
-            // When the fetch is complete (success or fail), we are no longer loading
             setIsLoading(false);
         }
     }
 
-    // --- All your cart logic is perfect, no changes needed ---
-    const addToCart = async (itemId) => { let cartData = structuredClone(cartItems); if (cartData[itemId]) { cartData[itemId] += 1; } else { cartData[itemId] = 1; } setCartItems(cartData); }
-    const updateCartQuantity = async (itemId, quantity) => { let cartData = structuredClone(cartItems); if (quantity === 0) { delete cartData[itemId]; } else { cartData[itemId] = quantity; } setCartItems(cartData) }
-    const getCartCount = () => { let totalCount = 0; for (const items in cartItems) { if (cartItems[items] > 0) { totalCount += cartItems[items]; } } return totalCount; }
-    const getCartAmount = () => { let totalAmount = 0; for (const items in cartItems) { let itemInfo = products.find((product) => product._id === items); if (itemInfo && cartItems[items] > 0) { totalAmount += itemInfo.offerPrice * cartItems[items]; } } return Math.floor(totalAmount * 100) / 100; }
-    // ---
+    const addToCart = async (itemId) => {
+        let cartData = structuredClone(cartItems);
+        cartData[itemId] = (cartData[itemId] || 0) + 1;
+        setCartItems(cartData);
+    }
+
+    const updateCartQuantity = async (itemId, quantity) => {
+        let cartData = structuredClone(cartItems);
+        if (quantity === 0) {
+            delete cartData[itemId];
+        } else {
+            cartData[itemId] = quantity;
+        }
+        setCartItems(cartData);
+    }
+
+    const getCartCount = () => {
+        return Object.values(cartItems).reduce((sum, qty) => sum + qty, 0);
+    }
+
+    const getCartAmount = () => {
+        let totalAmount = 0;
+        for (const itemId in cartItems) {
+            const product = products.find(p => p._id === itemId);
+            if (product) {
+                totalAmount += product.offerPrice * cartItems[itemId];
+            }
+        }
+        return Math.round(totalAmount * 100) / 100;
+    }
 
     useEffect(() => {
         fetchProductData();
     }, []);
 
-    // !! --- THIS IS THE IMPROVED LOGIC --- !!
     useEffect(() => {
-        if (isLoaded) { // First, wait for Clerk to be ready
+        if (isLoaded) {
             if (user) {
-                // If a user is logged in, start fetching their data from our backend
                 setIsLoading(true);
                 fetchBackendUserData();
             } else {
-                // If no user is logged in, reset all user-specific state and stop loading
                 setUserData(null);
                 setIsSeller(false);
                 setCartItems({});
                 setIsLoading(false);
             }
         }
-    }, [user, isLoaded]); // This effect now correctly reacts to user logging in or out
+    }, [user, isLoaded]);
 
     const value = {
         user,
-        isLoading, // Pass the single, reliable loading state
+        isLoading,
         getToken,
-        currency, router,
+        currency,
+        router,
         isSeller,
         userData,
         products,
-        cartItems, setCartItems,
-        addToCart, updateCartQuantity,
-        getCartCount, getCartAmount
-    }
+        cartItems,
+        setCartItems,
+        addToCart,
+        updateCartQuantity,
+        getCartCount,
+        getCartAmount
+    };
 
     return (
         <AppContext.Provider value={value}>
             {props.children}
         </AppContext.Provider>
-    )
+    );
 }

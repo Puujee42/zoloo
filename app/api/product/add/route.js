@@ -1,25 +1,19 @@
-// FILE: /app/api/product/add/route.js
-
 import connectDB from "@/config/db";
 import Product from "@/models/Product";
 import { getAuth } from "@clerk/nextjs/server";
 import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 
-// --- THIS IS THE FIX ---
-// This part was missing. It reads the secret keys from Vercel's
-// environment variables and gives them to the Cloudinary library.
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
 });
-// --- END OF FIX ---
 
 export async function POST(request) {
     try {
         const { userId, sessionClaims } = getAuth(request);
-
         if (!userId) {
             return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
         }
@@ -34,39 +28,48 @@ export async function POST(request) {
         const price = formData.get('price');
         const offerPrice = formData.get('offerPrice');
         const files = formData.getAll('images');
-        
-        // This line will now work because Cloudinary has its keys.
+
+        if (!name || !description || !category || !price || !offerPrice) {
+            return NextResponse.json({ success: false, message: 'All fields are required' }, { status: 400 });
+        }
+
         const uploadResults = await Promise.all(
             files.map(async (file) => {
+                if (!file || typeof file.arrayBuffer !== 'function') return null;
                 const arrayBuffer = await file.arrayBuffer();
                 const buffer = Buffer.from(arrayBuffer);
                 return new Promise((resolve, reject) => {
-                    const stream = cloudinary.uploader.upload_stream({ resource_type: 'auto' }, (error, result) => {
-                        if (error) { reject(error); } else { resolve(result); }
-                    });
+                    const stream = cloudinary.uploader.upload_stream(
+                        { resource_type: 'image', folder: 'quickcart/products' },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        }
+                    );
                     stream.end(buffer);
                 });
             })
         );
-        const imageUrls = uploadResults.map(result => result.secure_url);
+
+        const imageUrls = uploadResults.filter(Boolean).map(r => r.secure_url);
 
         await connectDB();
-        const newProduct = {
+
+        await Product.create({
             name,
             description,
             category,
-            price,
-            offerPrice,
+            price: Number(price),
+            offerPrice: Number(offerPrice),
             images: imageUrls,
-            userId: userId,
-            date: new Date()
-        };
-        await Product.create(newProduct);
+            userId,
+            date: Date.now()
+        });
 
         return NextResponse.json({ success: true, message: 'Product Created Successfully' });
 
     } catch (error) {
         console.error("Error creating product:", error);
-        return NextResponse.json({ success: false, message: 'An internal server error occurred.' }, { status: 500 });
+        return NextResponse.json({ success: false, message: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }

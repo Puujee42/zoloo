@@ -31,18 +31,9 @@ const AddProductForm = () => {
         formData.append('category', category);
         formData.append('price', price);
         formData.append('offerPrice', offerPrice);
-
-        const validFiles = files.filter(file => file);
-        if (validFiles.length === 0) {
-            toast.error("Please select at least one image.");
-            setIsUploading(false);
-            return;
+        for (let index = 0; index < files.length; index++) {
+            formData.append('images',files[index])
         }
-
-        for (let i = 0; i < validFiles.length; i++) {
-            formData.append('images', validFiles[i]);
-        }
-
         try {
             const token = await getToken();
             
