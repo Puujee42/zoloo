@@ -1,161 +1,183 @@
-// FILE: /app/seller/page.jsx
+// Recommended file path: /app/list-property/page.jsx
 
 'use client'
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
-import { assets } from "@/assets/assets";
-import Image from "next/image";
-import axios from "axios";
 import toast from "react-hot-toast";
+import { UploadCloud, X } from 'lucide-react'; // Modern icons
 
-// This is the Add Product form component, moved inside for simplicity
-const AddProductForm = () => {
-    const { getToken } = useAppContext();
-    const [files, setFiles] = useState([]);
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [category, setCategory] = useState('Model');
-    const [price, setPrice] = useState('');
-    const [offerPrice, setOfferPrice] = useState('');
-    const [isUploading, setIsUploading] = useState(false);
+// The entire page, including auth protection and the form.
+export default function ListPropertyPage() {
+    const { isSeller, isLoading: isAuthLoading } = useAppContext();
+    const router = useRouter();
+
+    // --- State for the form itself ---
+    const [propertyData, setPropertyData] = useState({
+        title: '',
+        description: '',
+        address: '',
+        type: 'House',
+        status: 'For Sale',
+        price: '',
+        bedrooms: '',
+        bathrooms: '',
+        area: '',
+        features: '',
+    });
+    const [images, setImages] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // --- Authorization Check ---
+    useEffect(() => {
+        if (!isAuthLoading && !isSeller) {
+            toast.error("Access Denied: You must be a seller to list a property.");
+            router.push('/');
+        }
+    }, [isAuthLoading, isSeller, router]);
+
+    // --- Form Handlers ---
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setPropertyData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (images.length + files.length > 10) {
+            toast.error("You can upload a maximum of 10 images.");
+            return;
+        }
+        setImages(prev => [...prev, ...files]);
+    };
+
+    const handleRemoveImage = (indexToRemove) => {
+        setImages(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsUploading(true);
+        if (images.length === 0) {
+            toast.error("Please upload at least one image.");
+            return;
+        }
+        setIsSubmitting(true);
 
         const formData = new FormData();
-        formData.append('name', name);
-        formData.append('description', description);
-        formData.append('category', category);
-        formData.append('price', price);
-        formData.append('offerPrice', offerPrice);
-        for (let index = 0; index < files.length; index++) {
-            formData.append('images',files[index])
-        }
-        try {
-            const token = await getToken();
-            
-            // --- This URL must match your API route's file path ---
-            const { data } = await axios.post('/api/product/add', formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+        Object.entries(propertyData).forEach(([key, value]) => {
+            formData.append(key, value);
+        });
+        images.forEach(image => {
+            formData.append('images', image);
+        });
 
-            if (data.success) {
-                toast.success(data.message);
-                setFiles([]);
-                setName('');
-                setDescription('');
-                setCategory('Model');
-                setPrice('');
-                setOfferPrice('');
+        try {
+            // Note: The Clerk 'Authorization' header is typically handled automatically
+            // by the middleware or a wrapper, so you might not need to add it manually.
+            const response = await fetch('/api/property', {
+                method: 'POST',
+                body: formData,
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                toast.success('Property Listed Successfully!');
+                router.push('/seller-dashboard'); // Redirect to dashboard
             } else {
-                toast.error(data.message);
+                toast.error(result.message || 'Failed to list property.');
             }
         } catch (error) {
-            toast.error(error.response?.data?.message || 'An unexpected error occurred.');
-            console.error("Upload failed:", error);
+            toast.error('An unexpected error occurred.');
+            console.error("Submission failed:", error);
         } finally {
-            setIsUploading(false);
+            setIsSubmitting(false);
         }
     };
 
-    return (
-        <div className="flex-1 min-h-screen">
-            <form onSubmit={handleSubmit} className="md:p-10 p-4 space-y-5 max-w-lg mx-auto">
-                <h1 className="text-2xl font-bold">Add a New Product</h1>
-                <div>
-                    <p className="text-base font-medium">Product Image (up to 4)</p>
-                    <div className="flex flex-wrap items-center gap-3 mt-2">
-                        {[...Array(4)].map((_, index) => (
-                            <label key={index} htmlFor={`image${index}`}>
-                                <input onChange={(e) => {
-                                    const updatedFiles = [...files];
-                                    updatedFiles[index] = e.target.files[0];
-                                    setFiles(updatedFiles);
-                                }} type="file" id={`image${index}`} hidden />
-                                <Image
-                                    className="w-24 h-24 cursor-pointer object-cover aspect-square border rounded"
-                                    src={files[index] ? URL.createObjectURL(files[index]) : assets.upload_area}
-                                    alt="upload placeholder"
-                                    width={100}
-                                    height={100}
-                                />
-                            </label>
-                        ))}
-                    </div>
-                </div>
-                
-                <div className="flex flex-col gap-1 max-w-md">
-                    <label className="text-base font-medium" htmlFor="product-name">Product Name</label>
-                    <input id="product-name" type="text" placeholder="e.g., Wireless Headphones" className="outline-none md:py-2.5 py-2 px-3 rounded border" onChange={(e) => setName(e.target.value)} value={name} required />
-                </div>
-
-                <div className="flex flex-col gap-1 max-w-md">
-                    <label className="text-base font-medium" htmlFor="product-description">Product Description</label>
-                    <textarea id="product-description" rows={4} className="outline-none md:py-2.5 py-2 px-3 rounded border resize-none" placeholder="Describe your product..." onChange={(e) => setDescription(e.target.value)} value={description} required ></textarea>
-                </div>
-
-                <div className="flex items-center gap-5 flex-wrap">
-                    <div className="flex flex-col gap-1 w-32">
-                        <label className="text-base font-medium" htmlFor="category">Category</label>
-                        <select id="category" className="outline-none md:py-2.5 py-2 px-3 rounded border" onChange={(e) => setCategory(e.target.value)} value={category}>
-                            <option value="Model">Model</option>
-                            <option value="Headphone">Headphone</option>
-                            <option value="Watch">Watch</option>
-                            <option value="Smartphone">Smartphone</option>
-                            <option value="Laptop">Laptop</option>
-                            <option value="Camera">Camera</option>
-                            <option value="Accessories">Accessories</option>
-                        </select>
-                    </div>
-                    <div className="flex flex-col gap-1 w-32">
-                        <label className="text-base font-medium" htmlFor="product-price">Product Price</label>
-                        <input id="product-price" type="number" placeholder="$20" className="outline-none md:py-2.5 py-2 px-3 rounded border" onChange={(e) => setPrice(e.target.value)} value={price} required />
-                    </div>
-                    <div className="flex flex-col gap-1 w-32">
-                        <label className="text-base font-medium" htmlFor="offer-price">Offer Price</label>
-                        <input id="offer-price" type="number" placeholder="$15" className="outline-none md:py-2.5 py-2 px-3 rounded border" onChange={(e) => setOfferPrice(e.target.value)} value={offerPrice} required />
-                    </div>
-                </div>
-                <button type="submit" disabled={isUploading} className="px-8 py-2.5 bg-orange-600 text-white font-medium rounded disabled:bg-gray-400">
-                    {isUploading ? "Uploading..." : "ADD PRODUCT"}
-                </button>
-            </form>
-        </div>
-    );
-};
-
-
-// This is the wrapper component that protects the page
-const ProtectedSellerPage = () => {
-    const { isSeller, isLoading } = useAppContext();
-    const router = useRouter();
-
-    useEffect(() => {
-        // Wait until the user data is fully loaded
-        if (!isLoading) {
-            // If it's done loading and the user is NOT a seller, redirect them
-            if (!isSeller) {
-                toast.error("Access Denied: You are not a seller.");
-                router.push('/'); // Redirect to the homepage
-            }
-        }
-    }, [isLoading, isSeller, router]);
-
-    // While loading, show a neutral message
-    if (isLoading) {
+    // --- Render Logic ---
+    if (isAuthLoading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <p>Verifying seller status...</p>
             </div>
         );
     }
+    
+    // Render the form if the user is a seller
+    return isSeller ? (
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+                <div className="space-y-4 mb-10">
+                    <h1 className="text-3xl font-bold text-gray-900">List Your Property</h1>
+                    <p className="text-gray-600">Fill out the details below to put your property on the market.</p>
+                </div>
 
-    // If loading is done and they are a seller, show the form.
-    // Otherwise, render null while the redirect happens.
-    return isSeller ? <AddProductForm /> : null;
-};
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    {/* Property Details */}
+                    <input name="title" value={propertyData.title} onChange={handleChange} placeholder="Property Title (e.g., Modern Downtown Condo)" className="input-style md:col-span-2" required />
+                    <input name="address" value={propertyData.address} onChange={handleChange} placeholder="Full Property Address" className="input-style md:col-span-2" required />
+                    <textarea name="description" value={propertyData.description} onChange={handleChange} placeholder="Detailed Property Description" className="input-style md:col-span-2" rows={5} required />
 
-export default ProtectedSellerPage;
+                    {/* Pricing and Specs */}
+                    <input name="price" type="number" value={propertyData.price} onChange={handleChange} placeholder="Price (USD)" className="input-style" required />
+                    <input name="area" type="number" value={propertyData.area} onChange={handleChange} placeholder="Area (sqft)" className="input-style" required />
+                    <input name="bedrooms" type="number" value={propertyData.bedrooms} onChange={handleChange} placeholder="Bedrooms" className="input-style" required />
+                    <input name="bathrooms" type="number" value={propertyData.bathrooms} onChange={handleChange} placeholder="Bathrooms" className="input-style" required />
+                    
+                    {/* Category Dropdowns */}
+                    <select name="type" value={propertyData.type} onChange={handleChange} className="input-style" required>
+                        <option>House</option><option>Apartment</option><option>Condo</option><option>Villa</option><option>Land</option><option>Townhouse</option>
+                    </select>
+                    <select name="status" value={propertyData.status} onChange={handleChange} className="input-style" required>
+                        <option>For Sale</option><option>For Rent</option>
+                    </select>
+                    
+                    {/* Features */}
+                    <input name="features" value={propertyData.features} onChange={handleChange} placeholder="Features (e.g., Pool, Garage, Fireplace)" className="input-style md:col-span-2" />
+
+                    {/* Image Uploader */}
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Property Images (up to 10)</label>
+                        <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
+                            <div className="text-center">
+                                <UploadCloud className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
+                                <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                                    <label htmlFor="file-upload" className="relative cursor-pointer rounded-md bg-white font-semibold text-blue-600 focus-within:outline-none hover:text-blue-500">
+                                        <span>Upload files</span>
+                                        <input id="file-upload" name="file-upload" type="file" className="sr-only" multiple onChange={handleImageChange} accept="image/*" />
+                                    </label>
+                                    <p className="pl-1">or drag and drop</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Image Previews */}
+                    {images.length > 0 && (
+                        <div className="md:col-span-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+                            {images.map((file, index) => (
+                                <div key={index} className="relative group">
+                                    <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className="h-24 w-24 rounded-md object-cover" />
+                                    <button type="button" onClick={() => handleRemoveImage(index)} className="absolute -top-2 -right-2 h-6 w-6 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <button type="submit" disabled={isSubmitting} className="mt-10 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors disabled:bg-gray-400">
+                    {isSubmitting ? "Submitting..." : "List My Property"}
+                </button>
+            </form>
+
+            <style jsx>{`
+                .input-style {
+                    @apply block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition;
+                }
+            `}</style>
+        </div>
+    ) : null; // Render nothing while redirecting
+}

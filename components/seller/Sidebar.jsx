@@ -1,44 +1,71 @@
+// /components/seller/Sidebar.jsx
+
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { assets } from '../../assets/assets';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+// Import modern icons from lucide-react
+import { LayoutDashboard, List, PlusCircle, MessageSquare } from 'lucide-react';
 
 const SideBar = () => {
-    const pathname = usePathname()
+    const pathname = usePathname();
+
+    // --- New, refactored menu items for a real estate dashboard ---
     const menuItems = [
-        { name: 'Add Product', path: '/seller', icon: assets.add_icon },
-        { name: 'Product List', path: '/seller/product-list', icon: assets.product_list_icon },
-        { name: 'Orders', path: '/seller/orders', icon: assets.order_icon },
+        {
+            name: 'Dashboard',
+            path: '/seller',
+            icon: <LayoutDashboard size={20} />
+        },
+        {
+            name: 'My Listings',
+            path: '/seller/my-listings',
+            icon: <List size={20} />
+        },
+        {
+            name: 'List New Property',
+            path: '/seller/list-property',
+            icon: <PlusCircle size={20} />
+        },
+        {
+            name: 'Inquiries',
+            path: '/seller/inquiries',
+            icon: <MessageSquare size={20} />
+        },
     ];
 
     return (
-        <div className='md:w-64 w-16 border-r min-h-screen text-base border-gray-300 py-2 flex flex-col'>
-            {menuItems.map((item) => {
+        // The sidebar is collapsible based on screen size
+        <aside className='md:w-64 w-20 border-r min-h-screen bg-white flex flex-col pt-5'>
+            <nav className="flex flex-col space-y-2">
+                {menuItems.map((item) => {
+                    // Check if the current path matches the item's path
+                    // We use startsWith for parent routes to also be active (e.g., /seller for /seller/settings)
+                    const isActive = pathname === item.path;
 
-                const isActive = pathname === item.path;
-
-                return (
-                    <Link href={item.path} key={item.name} passHref>
-                        <div
-                            className={
-                                `flex items-center py-3 px-4 gap-3 ${isActive
-                                    ? "border-r-4 md:border-r-[6px] bg-orange-600/10 border-orange-500/90"
-                                    : "hover:bg-gray-100/90 border-white"
-                                }`
-                            }
-                        >
-                            <Image
-                                src={item.icon}
-                                alt={`${item.name.toLowerCase()}_icon`}
-                                className="w-7 h-7"
-                            />
-                            <p className='md:block hidden text-center'>{item.name}</p>
-                        </div>
-                    </Link>
-                );
-            })}
-        </div>
+                    return (
+                        <Link href={item.path} key={item.name} passHref>
+                            <div
+                                className={`
+                                    flex items-center mx-2 py-3 px-4 gap-4 rounded-lg cursor-pointer transition-all group
+                                    ${isActive
+                                        ? "bg-blue-100 text-blue-700 font-semibold border-blue-500" // Active state
+                                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900" // Inactive state
+                                    }
+                                `}
+                            >
+                                {/* Tooltip for icon-only view on small screens */}
+                                <div className="relative" title={item.name}>
+                                    {item.icon}
+                                </div>
+                                <span className='md:block hidden'>{item.name}</span>
+                            </div>
+                        </Link>
+                    );
+                })}
+            </nav>
+        </aside>
     );
 };
 

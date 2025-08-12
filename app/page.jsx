@@ -1,27 +1,40 @@
-'use client'
-import React from "react";
-import HeaderSlider from "@/components/HeaderSlider";
-import HomeProducts from "@/components/HomeProducts";
-import Banner from "@/components/Banner";
-import NewsLetter from "@/components/NewsLetter";
-import FeaturedProduct from "@/components/FeaturedProduct";
+// /app/page.jsx (or your main home page file)
+
+import React from 'react';
+import HeaderSlider from '@/components/HeaderSlider';      // The new, modern hero slider
+import RecentProperties from '@/components/RecentProperties'; // The new component for latest listings
+import FeaturedProperties from '@/components/FeaturedProperties'; // The new component for premium listings
+import Newsletter from '@/components/Newsletter';         // The new, refactored newsletter
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const Home = () => {
+const HomePage = () => {
   return (
     <>
-      <Navbar/>
-      <div className="px-6 md:px-16 lg:px-32">
+      {/* Navbar is at the top of the page */}
+      <Navbar />
+      
+      {/* Main content container with consistent padding */}
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* 1. Hero section to capture attention */}
         <HeaderSlider />
-        <HomeProducts />
-        <FeaturedProduct />
-        <Banner />
-        <NewsLetter />
-      </div>
+        
+        {/* 2. Featured properties to showcase the best listings */}
+        <FeaturedProperties />
+        
+        {/* 3. Recently added properties to show freshness and activity */}
+        <RecentProperties />
+
+      </main>
+      
+      {/* 4. Newsletter section to capture leads, often placed before the footer */}
+      <Newsletter />
+      
+      {/* Footer is at the bottom of the page */}
       <Footer />
     </>
   );
 };
 
-export default Home;
+export default HomePage;

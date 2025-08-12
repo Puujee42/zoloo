@@ -12,40 +12,33 @@ export const useAppContext = () => {
 }
 
 export const AppContextProvider = (props) => {
-    const currency = process.env.NEXT_PUBLIC_CURRENCY;
     const router = useRouter();
     const { user, isLoaded } = useUser();
     const { getToken } = useAuth();
 
-    const [products, setProducts] = useState([]);
+    const [properties, setProperties] = useState([]);
     const [userData, setUserData] = useState(null);
     const [isSeller, setIsSeller] = useState(false);
-    const [cartItems, setCartItems] = useState({});
+    const [favorites, setFavorites] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Fetch real product data from backend
-    const fetchProductData = async () => {
+    const fetchPropertyData = async () => {
         try {
-            const {data} = await axios.get('/api/product/list')
+            const { data } = await axios.get('/api/property/list');
             if (data.success) {
-                setProducts(data.products)
-            }else{
-                toast.error(data.message)
+                setProperties(data.properties);
+            } else {
+                toast.error(data.message);
             }
         } catch (error) {
-            toast.error(error.message)
+            // console.error("Failed to fetch properties:", error.message);
         }
     }
 
     const fetchBackendUserData = async () => {
         if (!user) return;
         try {
-            if (user.publicMetadata.role === 'seller') {
-                setIsSeller(true);
-            } else {
-                setIsSeller(false);
-            }
-
+            setIsSeller(user.publicMetadata?.role === 'seller');
             const token = await getToken();
             const { data } = await axios.get('/api/user/data', {
                 headers: { Authorization: `Bearer ${token}` }
@@ -53,7 +46,8 @@ export const AppContextProvider = (props) => {
 
             if (data.success) {
                 setUserData(data.user);
-                setCartItems(data.user.cartItems || {});
+                // --- FIX 1: Use the consistent American spelling ---
+                setFavorites(data.user.favorites || []);
             } else {
                 toast.error(data.message);
                 setUserData(null);
@@ -66,39 +60,38 @@ export const AppContextProvider = (props) => {
         }
     }
 
-    const addToCart = async (itemId) => {
-        let cartData = structuredClone(cartItems);
-        cartData[itemId] = (cartData[itemId] || 0) + 1;
-        setCartItems(cartData);
-    }
-
-    const updateCartQuantity = async (itemId, quantity) => {
-        let cartData = structuredClone(cartItems);
-        if (quantity === 0) {
-            delete cartData[itemId];
-        } else {
-            cartData[itemId] = quantity;
+    const toggleFavorite = async (propertyId) => {
+        if (!user) {
+            toast.error("Please log in to save properties.");
+            router.push('/sign-in');
+            return;
         }
-        setCartItems(cartData);
-    }
 
-    const getCartCount = () => {
-        return Object.values(cartItems).reduce((sum, qty) => sum + qty, 0);
-    }
+        const isFavorited = favorites.includes(propertyId);
+        let updatedFavorites = isFavorited
+            ? favorites.filter(id => id !== propertyId)
+            : [...favorites, propertyId];
+        
+        setFavorites(updatedFavorites);
 
-    const getCartAmount = () => {
-        let totalAmount = 0;
-        for (const itemId in cartItems) {
-            const product = products.find(p => p._id === itemId);
-            if (product) {
-                totalAmount += product.offerPrice * cartItems[itemId];
-            }
+        try {
+            const token = await getToken();
+            // --- FIX 2: Use the consistent American spelling for the API route ---
+            await axios.post('/api/user/favorites', { propertyId }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+        } catch (error) {
+            toast.error("Could not update favorites.");
+            setFavorites(favorites); // Revert UI on failure
         }
-        return Math.round(totalAmount * 100) / 100;
-    }
+    };
+
+    const getFavoritesCount = () => {
+        return favorites.length;
+    };
 
     useEffect(() => {
-        fetchProductData();
+        fetchPropertyData();
     }, []);
 
     useEffect(() => {
@@ -109,7 +102,7 @@ export const AppContextProvider = (props) => {
             } else {
                 setUserData(null);
                 setIsSeller(false);
-                setCartItems({});
+                setFavorites([]);
                 setIsLoading(false);
             }
         }
@@ -119,17 +112,14 @@ export const AppContextProvider = (props) => {
         user,
         isLoading,
         getToken,
-        currency,
         router,
         isSeller,
         userData,
-        products,
-        cartItems,
-        setCartItems,
-        addToCart,
-        updateCartQuantity,
-        getCartCount,
-        getCartAmount
+        properties,
+        favorites,
+        setFavorites,
+        toggleFavorite,
+        getFavoritesCount
     };
 
     return (

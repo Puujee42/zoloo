@@ -1,41 +1,58 @@
+'use client'
 import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
+// Import icons from lucide-react
+import { BedDouble, Bath, SquareArrowOutUpRight, MoveRight } from "lucide-react";
+
+// --- Sample Data for Real Estate Hero Slider ---
+const sliderData = [
+  {
+    id: 1,
+    title: "Breathtaking Oceanfront Villa in Malibu",
+    description: "An architectural masterpiece with panoramic ocean views and unparalleled luxury.",
+    buttonText1: "View Property Details",
+    buttonText2: "Schedule a Tour",
+    imgSrc: assets.asus_laptop_image,
+    price: "$12,500,000",
+    bedrooms: 5,
+    bathrooms: 7,
+    area: "6,200 sqft",
+  },
+  {
+    id: 2,
+    title: "Secluded Modern Retreat in the Aspens",
+    description: "Experience tranquility and modern design, nestled in the heart of nature.",
+    buttonText1: "Explore This Home",
+    buttonText2: "Contact Agent",
+    imgSrc: assets.header_playstation_image,
+    price: "$7,800,000",
+    bedrooms: 4,
+    bathrooms: 5,
+    area: "4,800 sqft",
+  },
+  {
+    id: 3,
+    title: "Iconic Penthouse with Skyline Views",
+    description: "The pinnacle of urban living, offering breathtaking cityscapes and bespoke interiors.",
+    buttonText1: "Discover The Penthouse",
+    buttonText2: "Request Info",
+    imgSrc: assets.header_macbook_image,
+    price: "$22,000,000",
+    bedrooms: 3,
+    bathrooms: 4,
+    area: "4,500 sqft",
+  },
+];
+
 
 const HeaderSlider = () => {
-  const sliderData = [
-    {
-      id: 1,
-      title: "Experience Pure Sound - Your Perfect Headphones Awaits!",
-      offer: "Limited Time Offer 30% Off",
-      buttonText1: "Buy now",
-      buttonText2: "Find more",
-      imgSrc: assets.header_headphone_image,
-    },
-    {
-      id: 2,
-      title: "Next-Level Gaming Starts Here - Discover PlayStation 5 Today!",
-      offer: "Hurry up only few lefts!",
-      buttonText1: "Shop Now",
-      buttonText2: "Explore Deals",
-      imgSrc: assets.header_playstation_image,
-    },
-    {
-      id: 3,
-      title: "Power Meets Elegance - Apple MacBook Pro is Here for you!",
-      offer: "Exclusive Deal 40% Off",
-      buttonText1: "Order Now",
-      buttonText2: "Learn More",
-      imgSrc: assets.header_macbook_image,
-    },
-  ];
-
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % sliderData.length);
-    }, 3000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [sliderData.length]);
 
@@ -44,53 +61,74 @@ const HeaderSlider = () => {
   };
 
   return (
-    <div className="overflow-hidden relative w-full">
+    <div className="relative w-full h-[70vh] md:h-[85vh] overflow-hidden rounded-xl mt-6 shadow-2xl">
+      {/* Slides Container */}
       <div
-        className="flex transition-transform duration-700 ease-in-out"
-        style={{
-          transform: `translateX(-${currentSlide * 100}%)`,
-        }}
+        className="flex h-full transition-transform duration-1000 ease-in-out"
+        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
-        {sliderData.map((slide, index) => (
-          <div
-            key={slide.id}
-            className="flex flex-col-reverse md:flex-row items-center justify-between bg-[#E6E9F2] py-8 md:px-14 px-5 mt-6 rounded-xl min-w-full"
-          >
-            <div className="md:pl-8 mt-10 md:mt-0">
-              <p className="md:text-base text-orange-600 pb-1">{slide.offer}</p>
-              <h1 className="max-w-lg md:text-[40px] md:leading-[48px] text-2xl font-semibold">
+        {sliderData.map((slide) => (
+          <div key={slide.id} className="relative min-w-full h-full text-white">
+            {/* Background Image */}
+            <Image
+              src={slide.imgSrc}
+              alt={slide.title}
+              layout="fill"
+              objectFit="cover"
+              className="z-0"
+            />
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent z-10"></div>
+
+            {/* Content */}
+            <div className="relative z-20 flex flex-col justify-end h-full p-8 md:p-16">
+              <h1 className="text-3xl md:text-5xl font-bold max-w-3xl leading-tight text-shadow-lg">
                 {slide.title}
               </h1>
-              <div className="flex items-center mt-4 md:mt-6 ">
-                <button className="md:px-10 px-7 md:py-2.5 py-2 bg-orange-600 rounded-full text-white font-medium">
+              <p className="mt-4 max-w-2xl text-lg text-gray-200 text-shadow">
+                {slide.description}
+              </p>
+              
+              {/* Property Specs */}
+              <div className="flex items-center gap-6 mt-6 text-gray-200">
+                  <div className="flex items-center gap-2"><BedDouble size={20} /> {slide.bedrooms} Beds</div>
+                  <div className="flex items-center gap-2"><Bath size={20} /> {slide.bathrooms} Baths</div>
+                  <div className="flex items-center gap-2"><SquareArrowOutUpRight size={20} /> {slide.area}</div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-start gap-4 mt-8">
+                <button className="px-8 py-3 bg-blue-600 rounded-md font-semibold hover:bg-blue-700 transition-all transform hover:scale-105">
                   {slide.buttonText1}
                 </button>
-                <button className="group flex items-center gap-2 px-6 py-2.5 font-medium">
+                <button className="group flex items-center gap-2 px-8 py-3 font-semibold bg-black/30 backdrop-blur-sm rounded-md hover:bg-white hover:text-black transition-colors">
                   {slide.buttonText2}
-                  <Image className="group-hover:translate-x-1 transition" src={assets.arrow_icon} alt="arrow_icon" />
+                  <MoveRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
-            </div>
-            <div className="flex items-center flex-1 justify-center">
-              <Image
-                className="md:w-72 w-48"
-                src={slide.imgSrc}
-                alt={`Slide ${index + 1}`}
-              />
             </div>
           </div>
         ))}
       </div>
 
-      <div className="flex items-center justify-center gap-2 mt-8">
-        {sliderData.map((_, index) => (
+      {/* Navigation Thumbnails */}
+      <div className="absolute bottom-8 right-8 z-30 flex items-center gap-3">
+        {sliderData.map((slide, index) => (
           <div
-            key={index}
+            key={slide.id}
             onClick={() => handleSlideChange(index)}
-            className={`h-2 w-2 rounded-full cursor-pointer ${
-              currentSlide === index ? "bg-orange-600" : "bg-gray-500/30"
+            className={`cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+              currentSlide === index ? "border-blue-500 scale-110" : "border-transparent opacity-60 hover:opacity-100"
             }`}
-          ></div>
+          >
+            <Image
+                src={slide.imgSrc}
+                alt={`Thumbnail ${index + 1}`}
+                width={80}
+                height={50}
+                objectFit="cover"
+            />
+          </div>
         ))}
       </div>
     </div>
