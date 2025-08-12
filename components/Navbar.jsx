@@ -1,3 +1,5 @@
+// components/Navbar.jsx
+
 'use client'
 
 import React, { useState, useEffect, useRef } from "react";
@@ -7,177 +9,139 @@ import { useAppContext } from "@/context/AppContext";
 import { useClerk, UserButton } from "@clerk/nextjs";
 import { assets } from "@/assets/assets";
 // Import modern icons
-import { Home, Building2, Heart, LayoutDashboard, ChevronDown } from "lucide-react";
+import { Home, Building2, Heart, LayoutDashboard, ChevronDown, Map, PlusCircle } from "lucide-react";
 
 const Navbar = () => {
   const { isSeller, router, user, isLoading } = useAppContext();
   const { openSignIn } = useClerk();
 
-  // State to manage the visibility of the properties dropdown
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  // Ref to the dropdown container to detect outside clicks
   const dropdownRef = useRef(null);
 
   const propertyTypes = [
-    { name: 'Houses', path: '/all-properties?type=House' },
-    { name: 'Apartments', path: '/all-properties?type=Apartment' },
-    { name: 'Condos', path: '/all-properties?type=Condo' },
-    { name: 'Villas', path: '/all-properties?type=Villa' },
-    { name: 'Land', path: '/all-properties?type=Land' },
+    { name: 'Байшин', path: '/all-properties?type=House' },
+    { name: 'Орон сууц', path: '/all-properties?type=Apartment' },
+    { name: 'Кондо', path: '/all-properties?type=Condo' },
+    { name: 'Вилла', path: '/all-properties?type=Villa' },
+    { name: 'Газрын талбай', path: '/all-properties?type=Land' },
   ];
 
-  // Effect to handle clicks outside of the dropdown menu to close it
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     };
-    // Add the event listener to the whole document
     document.addEventListener("mousedown", handleClickOutside);
-    // Cleanup function to remove the event listener when the component unmounts
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownRef]);
 
-  // Loading skeleton state
+  // A simple skeleton loader can be used while authenticating
   if (isLoading) {
     return (
-      <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-4 border-b border-gray-200 bg-white">
-        <div className="h-8 bg-gray-200 rounded w-32 animate-pulse"></div>
-        <div className="hidden md:flex items-center gap-8">
-          <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+      <nav className="flex items-center justify-between px-6 md:px-16 lg:px-24 py-4 border-b bg-white">
+        <div className="h-8 w-32 bg-gray-200 rounded-md animate-pulse"></div>
+        <div className="flex items-center gap-8">
+          <div className="h-5 w-16 bg-gray-200 rounded-md animate-pulse"></div>
+          <div className="h-5 w-24 bg-gray-200 rounded-md animate-pulse"></div>
+          <div className="h-5 w-20 bg-gray-200 rounded-md animate-pulse"></div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="h-9 bg-gray-200 rounded-md w-20 animate-pulse"></div>
-          <div className="h-9 bg-gray-200 rounded-md w-24 animate-pulse"></div>
-        </div>
+        <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse"></div>
       </nav>
     );
   }
 
   return (
-    <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-4 border-b border-gray-200 bg-white text-gray-800">
+    // --- 1. Main Navbar: Clean white background with a subtle border ---
+    <nav className="flex items-center justify-between px-6 md:px-16 lg:px-24 py-4 border-b border-gray-200 bg-white text-green-900 sticky top-0 z-50">
       {/* Logo */}
-      <Image
-        className="cursor-pointer w-28 md:w-32"
-        onClick={() => router.push('/')}
-        src={assets.logo}
-        alt="logo"
-        width={128}
-        height={40}
-      />
+      <Link href="/">
+        <Image
+          className="cursor-pointer w-28 md:w-32"
+          src={assets.logo}
+          alt="logo"
+          width={128}
+          height={40}
+        />
+      </Link>
 
-      {/* Desktop Navigation */}
-      <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-        <Link href="/" className="hover:text-blue-600 transition-colors">
-          Home
+      {/* --- 2. Desktop Navigation: Rich green text with gold hover effect --- */}
+      <div className="hidden lg:flex items-center gap-8 text-sm font-medium">
+        <Link href="/" className="hover:text-yellow-500 transition-colors">
+          Нүүр
         </Link>
         
-        {/* --- CLICK-BASED PROPERTIES DROPDOWN --- */}
-        <div 
-          className="relative"
-          ref={dropdownRef} // Attach the ref to the dropdown container
-        >
-          {/* This button toggles the dropdown's visibility */}
+        {/* Properties Dropdown */}
+        <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setIsDropdownOpen(prev => !prev)}
-            className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+            className="flex items-center gap-1 hover:text-yellow-500 transition-colors"
           >
-            Properties
+            Үл хөдлөх
             <ChevronDown size={16} className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
-
-          {/* Conditionally render the dropdown menu */}
           {isDropdownOpen && (
-            <div className="absolute top-full mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-10 border border-gray-100">
-              <Link 
-                  href="/all-properties" 
-                  className="block px-4 py-2 text-sm font-bold text-gray-800 hover:bg-blue-50 hover:text-blue-700"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  All Properties
-                </Link>
-                <div className="h-px bg-gray-200 my-1"></div>
+            // --- 3. Dropdown Menu: Styled with gold hover effects ---
+            <div className="absolute top-full mt-3 w-48 bg-white rounded-md shadow-lg py-2 z-10 border border-gray-100">
+              <Link href="/all-properties" className="block px-4 py-2 text-sm font-bold text-green-800 hover:bg-yellow-50 hover:text-yellow-600" onClick={() => setIsDropdownOpen(false)}>
+                  Бүх үл хөдлөх
+              </Link>
+              <div className="h-px bg-gray-200 my-1"></div>
               {propertyTypes.map((type) => (
-                <Link 
-                  key={type.name} 
-                  href={type.path} 
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
+                <Link key={type.name} href={type.path} className="block px-4 py-2 text-sm text-gray-600 hover:bg-yellow-50 hover:text-yellow-600" onClick={() => setIsDropdownOpen(false)}>
                   {type.name}
                 </Link>
               ))}
             </div>
           )}
         </div>
-        {/* --- END OF DROPDOWN --- */}
 
-        <Link href="/about" className="hover:text-blue-600 transition-colors">
-          About Us
+        <Link href="/about" className="hover:text-yellow-500 transition-colors">
+          Бидний тухай
         </Link>
-        <Link href="/contact" className="hover:text-blue-600 transition-colors">
-          Contact
+        <Link href="/contact" className="hover:text-yellow-500 transition-colors">
+          Холбоо барих
+        </Link>
+        <Link href="/map-view" className="flex items-center gap-2 hover:text-yellow-500 transition-colors">
+          <Map size={16} />
+          Газрын зураг
         </Link>
       </div>
 
-      {/* User Actions */}
-      <div className="flex items-center gap-4">
+      {/* --- 4. User Actions: Branded buttons for better UX --- */}
+      <div className="flex items-center gap-3">
         {user ? (
           <>
             {isSeller && (
               <button
                 onClick={() => router.push('/seller')}
-                className="hidden sm:flex items-center gap-2 text-sm border border-gray-300 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors"
+                // --- 5. Seller Button: Styled as a secondary action ---
+                className="hidden sm:flex items-center gap-2 text-sm border-2 border-green-800 text-green-800 px-4 py-2 rounded-full hover:bg-green-800 hover:text-white font-semibold transition-colors"
               >
                 <LayoutDashboard size={16} />
-                Seller Dashboard
+                Худалдагчийн самбар
               </button>
             )}
-            <UserButton afterSignOutUrl="/">
-              <UserButton.MenuItems>
-                <UserButton.Action 
-                  label="Home" 
-                  labelIcon={<Home className="h-4 w-4"/>}
-                  onClick={() => router.push('/')} 
-                />
-                <UserButton.Action 
-                  label="All Properties" 
-                  labelIcon={<Building2 className="h-4 w-4"/>}
-                  onClick={() => router.push('/all-properties')} 
-                />
-                <UserButton.Action 
-                  label="My Favorites" 
-                  labelIcon={<Heart className="h-4 w-4"/>}
-                  onClick={() => router.push('/favorites')} 
-                />
-                {isSeller && (
-                  <UserButton.Action 
-                    label="Seller Dashboard" 
-                    labelIcon={<LayoutDashboard className="h-4 w-4"/>}
-                    onClick={() => router.push('/seller')} 
-                  />
-                )}
-              </UserButton.MenuItems>
-            </UserButton>
+            <UserButton afterSignOutUrl="/" />
           </>
         ) : (
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-3">
             <button
               onClick={openSignIn}
-              className="text-sm font-medium hover:text-blue-600 transition-colors"
+              className="text-sm font-semibold text-green-800 hover:text-yellow-600 transition-colors"
             >
-              Login
+              Нэвтрэх
             </button>
             <button
-              onClick={() => router.push('/sign-up')}
-              className="text-sm font-medium bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              onClick={() => openSignIn({ redirectUrl: '/submit-property' })}
+              // --- 6. "Submit Property" Button: Styled as a primary CTA ---
+              className="flex items-center gap-2 text-sm bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors transform hover:scale-105"
             >
-              Sign Up
+              <PlusCircle size={16} />
+              Зар оруулах
             </button>
           </div>
         )}

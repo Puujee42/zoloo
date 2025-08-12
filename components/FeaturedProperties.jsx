@@ -2,39 +2,43 @@
 
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
-import PropertyCard from './PropertyCard'; // The reusable card component
-import PropertyCardSkeleton from './PropertyCardSkeleton'; // The reusable skeleton loader
+import PropertyCard from './PropertyCard';
+import PropertyCardSkeleton from './PropertyCardSkeleton';
 
 /**
- * A component to display a curated list of "Featured" properties.
+ * "Онцлох" үл хөдлөх хөрөнгийн жагсаалтыг харуулах компонент.
  */
 const FeaturedProperties = () => {
   const { properties, isLoading } = useAppContext();
 
-  // In a real application, you might have a specific flag for featured properties.
-  // For this example, we'll simply feature the first 3 properties from the list.
+  // Show the first 3 properties as featured, or an empty array if not available
   const featuredProperties = properties?.slice(0, 3) || [];
 
   return (
-    <div className="py-20 md:py-28">
+    // --- 1. Container: Use a subtle, light background ---
+    <div className="bg-gray-50 py-20 md:py-28 px-4 sm:px-6 lg:px-8">
       {/* Section Header */}
-      <div className="flex flex-col items-center text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-800">Featured Properties</h2>
-        <p className="mt-2 text-gray-600 max-w-xl">
-          Discover our handpicked selection of premier properties, from luxurious estates to cozy family homes.
+      <div className="flex flex-col items-center text-center mb-12">
+        {/* --- 2. Heading: Style with a rich, dark green --- */}
+        <h2 className="text-3xl md:text-4xl font-extrabold text-green-900">
+          Онцлох Үл Хөдлөх Хөрөнгө
+        </h2>
+        <p className="mt-4 text-gray-600 max-w-2xl text-lg">
+          Тансаг зэрэглэлийн харшаас эхлээд тохилог гэр бүлийн байшин хүртэлх бидний онцгойлон сонгосон үл хөдлөх хөрөнгүүдтэй танилцана уу.
         </p>
-        <div className="w-24 h-1 bg-blue-600 mt-4 rounded-full"></div>
+        {/* --- 3. Separator: Style with a vibrant gold --- */}
+        <div className="w-28 h-1 bg-yellow-400 mt-6 rounded-full"></div>
       </div>
 
       {/* Properties Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {isLoading ? (
-          // If loading, show 3 skeleton placeholders
+          // --- Skeleton: Display while data is loading ---
           Array.from({ length: 3 }).map((_, index) => (
             <PropertyCardSkeleton key={index} />
           ))
         ) : (
-          // Once loaded, show the actual featured properties
+          // Render the actual featured properties once loaded
           featuredProperties.map((property) => (
             <PropertyCard key={property._id} property={property} />
           ))

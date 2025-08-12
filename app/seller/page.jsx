@@ -1,183 +1,159 @@
-// Recommended file path: /app/list-property/page.jsx
-
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import {React, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
-import toast from "react-hot-toast";
-import { UploadCloud, X } from 'lucide-react'; // Modern icons
+import toast from 'react-hot-toast';
+import { List, MessageSquare, Tag, KeyRound } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
-// The entire page, including auth protection and the form.
-export default function ListPropertyPage() {
-    const { isSeller, isLoading: isAuthLoading } = useAppContext();
+// A small, reusable component for statistic cards with themed colors.
+const StatCard = ({ title, value, icon, isLoading }) => (
+    <div className="bg-white p-6 rounded-lg shadow-md flex items-center gap-4 border border-gray-200">
+        {isLoading ? (
+            <div className="h-12 w-12 rounded-full bg-gray-200 animate-pulse"></div>
+        ) : (
+            // Themed icon background
+            <div className="bg-green-100 p-3 rounded-full">{icon}</div>
+        )}
+        <div>
+            <p className="text-sm text-gray-500">{title}</p>
+            {isLoading ? (
+                <div className="h-7 w-12 bg-gray-300 rounded mt-1 animate-pulse"></div>
+            ) : (
+                <p className="text-2xl font-bold text-green-900">{value}</p>
+            )}
+        </div>
+    </div>
+);
+
+// The main Dashboard Page component.
+const SellerDashboardPage = () => {
+    const { user } = useAppContext();
     const router = useRouter();
 
-    // --- State for the form itself ---
-    const [propertyData, setPropertyData] = useState({
-        title: '',
-        description: '',
-        address: '',
-        type: 'House',
-        status: 'For Sale',
-        price: '',
-        bedrooms: '',
-        bathrooms: '',
-        area: '',
-        features: '',
-    });
-    const [images, setImages] = useState([]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [listings, setListings] = useState([]);
+    const [stats, setStats] = useState({ total: 0, forSale: 0, forRent: 0, inquiries: 0 });
+    const [isLoading, setIsLoading] = useState(true);
 
-    // --- Authorization Check ---
+    const [recentInquiries, setRecentInquiries] = useState([
+        { _id: 'inq1', buyerName: 'Элис Жонсон', propertyTitle: 'Хотын төвийн орчин үеийн пентхаус', date: new Date() },
+        { _id: 'inq2', buyerName: 'Боб Вильямс', propertyTitle: 'Хотын захад байрлах тухтай газар', date: new Date() },
+    ]);
+
     useEffect(() => {
-        if (!isAuthLoading && !isSeller) {
-            toast.error("Access Denied: You must be a seller to list a property.");
-            router.push('/');
-        }
-    }, [isAuthLoading, isSeller, router]);
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch('/api/property/seller-list');
+                const data = await response.json();
 
-    // --- Form Handlers ---
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setPropertyData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleImageChange = (e) => {
-        const files = Array.from(e.target.files);
-        if (images.length + files.length > 10) {
-            toast.error("You can upload a maximum of 10 images.");
-            return;
-        }
-        setImages(prev => [...prev, ...files]);
-    };
-
-    const handleRemoveImage = (indexToRemove) => {
-        setImages(prev => prev.filter((_, index) => index !== indexToRemove));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (images.length === 0) {
-            toast.error("Please upload at least one image.");
-            return;
-        }
-        setIsSubmitting(true);
-
-        const formData = new FormData();
-        Object.entries(propertyData).forEach(([key, value]) => {
-            formData.append(key, value);
-        });
-        images.forEach(image => {
-            formData.append('images', image);
-        });
-
-        try {
-            // Note: The Clerk 'Authorization' header is typically handled automatically
-            // by the middleware or a wrapper, so you might not need to add it manually.
-            const response = await fetch('/api/property', {
-                method: 'POST',
-                body: formData,
-            });
-            const result = await response.json();
-
-            if (result.success) {
-                toast.success('Property Listed Successfully!');
-                router.push('/seller-dashboard'); // Redirect to dashboard
-            } else {
-                toast.error(result.message || 'Failed to list property.');
-            }
-        } catch (error) {
-            toast.error('An unexpected error occurred.');
-            console.error("Submission failed:", error);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    // --- Render Logic ---
-    if (isAuthLoading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <p>Verifying seller status...</p>
-            </div>
-        );
-    }
-    
-    // Render the form if the user is a seller
-    return isSeller ? (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-                <div className="space-y-4 mb-10">
-                    <h1 className="text-3xl font-bold text-gray-900">List Your Property</h1>
-                    <p className="text-gray-600">Fill out the details below to put your property on the market.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    {/* Property Details */}
-                    <input name="title" value={propertyData.title} onChange={handleChange} placeholder="Property Title (e.g., Modern Downtown Condo)" className="input-style md:col-span-2" required />
-                    <input name="address" value={propertyData.address} onChange={handleChange} placeholder="Full Property Address" className="input-style md:col-span-2" required />
-                    <textarea name="description" value={propertyData.description} onChange={handleChange} placeholder="Detailed Property Description" className="input-style md:col-span-2" rows={5} required />
-
-                    {/* Pricing and Specs */}
-                    <input name="price" type="number" value={propertyData.price} onChange={handleChange} placeholder="Price (USD)" className="input-style" required />
-                    <input name="area" type="number" value={propertyData.area} onChange={handleChange} placeholder="Area (sqft)" className="input-style" required />
-                    <input name="bedrooms" type="number" value={propertyData.bedrooms} onChange={handleChange} placeholder="Bedrooms" className="input-style" required />
-                    <input name="bathrooms" type="number" value={propertyData.bathrooms} onChange={handleChange} placeholder="Bathrooms" className="input-style" required />
-                    
-                    {/* Category Dropdowns */}
-                    <select name="type" value={propertyData.type} onChange={handleChange} className="input-style" required>
-                        <option>House</option><option>Apartment</option><option>Condo</option><option>Villa</option><option>Land</option><option>Townhouse</option>
-                    </select>
-                    <select name="status" value={propertyData.status} onChange={handleChange} className="input-style" required>
-                        <option>For Sale</option><option>For Rent</option>
-                    </select>
-                    
-                    {/* Features */}
-                    <input name="features" value={propertyData.features} onChange={handleChange} placeholder="Features (e.g., Pool, Garage, Fireplace)" className="input-style md:col-span-2" />
-
-                    {/* Image Uploader */}
-                    <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Property Images (up to 10)</label>
-                        <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                            <div className="text-center">
-                                <UploadCloud className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
-                                <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                                    <label htmlFor="file-upload" className="relative cursor-pointer rounded-md bg-white font-semibold text-blue-600 focus-within:outline-none hover:text-blue-500">
-                                        <span>Upload files</span>
-                                        <input id="file-upload" name="file-upload" type="file" className="sr-only" multiple onChange={handleImageChange} accept="image/*" />
-                                    </label>
-                                    <p className="pl-1">or drag and drop</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Image Previews */}
-                    {images.length > 0 && (
-                        <div className="md:col-span-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                            {images.map((file, index) => (
-                                <div key={index} className="relative group">
-                                    <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className="h-24 w-24 rounded-md object-cover" />
-                                    <button type="button" onClick={() => handleRemoveImage(index)} className="absolute -top-2 -right-2 h-6 w-6 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <X size={16} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                <button type="submit" disabled={isSubmitting} className="mt-10 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors disabled:bg-gray-400">
-                    {isSubmitting ? "Submitting..." : "List My Property"}
-                </button>
-            </form>
-
-            <style jsx>{`
-                .input-style {
-                    @apply block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition;
+                if (data.success) {
+                    const properties = data.properties;
+                    setListings(properties);
+                    const forSaleCount = properties.filter(p => p.status === 'For Sale').length;
+                    const forRentCount = properties.filter(p => p.status === 'For Rent').length;
+                    setStats({
+                        total: properties.length,
+                        forSale: forSaleCount,
+                        forRent: forRentCount,
+                        inquiries: recentInquiries.length,
+                    });
+                } else {
+                    toast.error("Заруудыг татахад алдаа гарлаа.");
                 }
-            `}</style>
+            } catch (error) {
+                toast.error("Өгөгдөл татах үед алдаа гарлаа.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const recentListings = listings.slice(0, 5);
+
+    return (
+        <div className="w-full">
+            {/* Header */}
+            <div className="mb-8">
+                {/* Themed heading */}
+                <h1 className="text-3xl font-bold text-green-900">Тавтай морил, {user?.firstName || 'Борлуулагч'}!</h1>
+                <p className="text-gray-600">Таны үйл ажиллагааны тойм энд байна.</p>
+            </div>
+
+            {/* Statistics Card Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                {/* Themed Stat Cards */}
+                <StatCard title="Нийт зарууд" value={stats.total} icon={<List className="text-green-700"/>} isLoading={isLoading} />
+                <StatCard title="Нийт лавлагаанууд" value={stats.inquiries} icon={<MessageSquare className="text-green-700"/>} isLoading={isLoading} />
+                <StatCard title="Зарах үл хөдлөх хөрөнгө" value={stats.forSale} icon={<Tag className="text-green-700"/>} isLoading={isLoading} />
+                <StatCard title="Түрээслүүлэх үл хөдлөх хөрөнгө" value={stats.forRent} icon={<KeyRound className="text-amber-700"/>} isLoading={isLoading} />
+            </div>
+
+            {/* Recent Activity Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Recent Listings */}
+                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold text-gray-800">Сүүлийн үеийн зарууд</h2>
+                        {/* Themed "View All" link */}
+                        <Link href="/seller/my-listings" className="text-sm font-semibold text-amber-600 hover:underline">Бүгдийг харах</Link>
+                    </div>
+                    <div className="space-y-4">
+                        {isLoading ? (
+                            Array.from({ length: 3 }).map((_, index) => (
+                                <div key={index} className="flex items-center gap-4 animate-pulse">
+                                    <div className="h-16 w-16 bg-gray-200 rounded-md"></div>
+                                    <div className="flex-1 space-y-2"><div className="h-4 bg-gray-300 rounded w-3/4"></div><div className="h-4 bg-gray-200 rounded w-1/2"></div></div>
+                                </div>
+                            ))
+                        ) : recentListings.length > 0 ? (
+                            recentListings.map(property => (
+                                <div key={property._id} className="flex items-center gap-4 hover:bg-gray-50 p-2 rounded-md cursor-pointer transition-colors" onClick={() => router.push(`/property/${property._id}`)}>
+                                    <Image src={property.images[0]} alt={property.title} width={64} height={64} className="h-16 w-16 rounded-md object-cover" />
+                                    <div>
+                                        <p className="font-semibold text-gray-900">{property.title}</p>
+                                        {/* Themed price text */}
+                                        <p className="text-sm text-green-800 font-bold">${property.price.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-center py-4">Та одоогоор ямар ч зар бүртгүүлээгүй байна.</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Recent Inquiries */}
+                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold text-gray-800">Сүүлийн үеийн лавлагаанууд</h2>
+                        {/* Themed "View All" link */}
+                        <Link href="/seller/inquiries" className="text-sm font-semibold text-amber-600 hover:underline">Бүгдийг харах</Link>
+                    </div>
+                    <div className="space-y-4">
+                        {isLoading ? (
+                             Array.from({ length: 2 }).map((_, index) => (
+                                <div key={index} className="space-y-2 animate-pulse p-2"><div className="h-4 bg-gray-300 rounded w-full"></div><div className="h-4 bg-gray-200 rounded w-2/3"></div></div>
+                            ))
+                        ) : recentInquiries.length > 0 ? (
+                            recentInquiries.map(inquiry => (
+                                <div key={inquiry._id} className="p-2 rounded-md hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => router.push('/seller/inquiries')}>
+                                    <p className="font-semibold text-gray-900">{inquiry.buyerName}</p>
+                                    <p className="text-sm text-gray-600">Лавласан зүйл: <span className="font-medium">{inquiry.propertyTitle}</span></p>
+                                    <p className="text-xs text-gray-400 mt-1">{new Date(inquiry.date).toLocaleString()}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-center py-4">Танд шинэ лавлагаа байхгүй байна.</p>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
-    ) : null; // Render nothing while redirecting
-}
+    );
+};
+
+export default SellerDashboardPage;

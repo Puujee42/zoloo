@@ -1,46 +1,44 @@
-// Recommended file path: /app/seller/inquiries/page.jsx
+// /app/seller/inquiries/page.jsx
 
 'use client';
 
 import React, { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
-import { Eye, MessageSquare } from "lucide-react"; // Modern icons
+import { Eye, MessageSquare, Inbox } from "lucide-react"; // Added Inbox icon for empty state
 
-// --- New dummy data with live image URLs ---
+// --- Dummy data with placeholder images ---
 const inquiryDummyData = [
     {
         _id: "inq1",
         property: {
             _id: "prop1",
-            title: "Modern Downtown Penthouse",
-            // Using a live placeholder image
+            title: "Хотын төвийн орчин үеийн пентхаус",
             image: "https://picsum.photos/id/1060/800/600?grayscale&blur=2" 
         },
         buyer: {
-            name: "John Doe",
+            name: "Жон Доу",
             email: "john.d@example.com",
             phone: "555-123-4567"
         },
-        message: "I'm very interested in this property. When can I schedule a tour?",
+        message: "Би энэ үл хөдлөх хөрөнгийг маш их сонирхож байна. Би хэзээ үзэх цаг товлож болох вэ?",
         date: new Date('2024-08-10T10:00:00Z'),
-        status: "New"
+        status: "Шинэ"
     },
     {
         _id: "inq2",
         property: {
             _id: "prop2",
-            title: "Cozy Suburban Getaway",
-            // Using a live placeholder image
+            title: "Хотын захад байрлах тухтай газар",
             image: "https://picsum.photos/id/1062/800/600?grayscale&blur=2"
         },
         buyer: {
-            name: "Jane Smith",
+            name: "Жэйн Смит",
             email: "jane.s@example.com",
             phone: "555-987-6543"
         },
-        message: "Could you provide more details about the neighborhood amenities?",
+        message: "Та хорооллын тохилог байдлын талаар дэлгэрэнгүй мэдээлэл өгч чадах уу?",
         date: new Date('2024-08-09T15:30:00Z'),
-        status: "Contacted"
+        status: "Холбогдсон"
     }
 ];
 
@@ -48,9 +46,8 @@ const InquiriesPage = () => {
     const [inquiries, setInquiries] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // This function would fetch real data from your API
+    // This function will fetch your real data from an API
     const fetchInquiries = async () => {
-        // In a real app: const response = await fetch('/api/inquiries/seller');
         setInquiries(inquiryDummyData);
         setIsLoading(false);
     }
@@ -59,13 +56,18 @@ const InquiriesPage = () => {
         fetchInquiries();
     }, []);
 
+    // --- getStatusBadge function updated with the Green & Gold theme ---
     const getStatusBadge = (status) => {
         const baseClasses = "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset";
         switch (status) {
-            case 'New': return <span className={`${baseClasses} bg-blue-50 text-blue-700 ring-blue-600/20`}>{status}</span>;
-            case 'Contacted': return <span className={`${baseClasses} bg-yellow-50 text-yellow-800 ring-yellow-600/20`}>{status}</span>;
-            case 'Tour Scheduled': return <span className={`${baseClasses} bg-green-50 text-green-700 ring-green-600/20`}>{status}</span>;
-            default: return <span className={`${baseClasses} bg-gray-50 text-gray-600 ring-gray-500/10`}>{status}</span>;
+            case 'Шинэ': 
+                return <span className={`${baseClasses} bg-amber-50 text-amber-800 ring-amber-600/20`}>{status}</span>;
+            case 'Холбогдсон': 
+                return <span className={`${baseClasses} bg-amber-100 text-amber-900 ring-amber-600/30`}>{status}</span>;
+            case 'Үзэх цаг товлосон': 
+                return <span className={`${baseClasses} bg-green-50 text-green-700 ring-green-600/20`}>{status}</span>;
+            default: 
+                return <span className={`${baseClasses} bg-gray-50 text-gray-600 ring-gray-500/10`}>{status}</span>;
         }
     };
 
@@ -76,29 +78,30 @@ const InquiriesPage = () => {
     return (
         <div className="w-full">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Property Inquiries</h1>
+                <h1 className="text-3xl font-bold text-green-900">Үл хөдлөх хөрөнгийн лавлагаа</h1>
             </div>
             
             {inquiries.length === 0 ? (
-                <div className="text-center py-20 border-2 border-dashed rounded-lg">
-                    <h2 className="text-xl font-semibold text-gray-900">You have no inquiries yet.</h2>
-                    <p className="mt-2 text-gray-600">When potential buyers contact you, their messages will appear here.</p>
+                <div className="text-center py-20 border-2 border-dashed rounded-lg bg-white">
+                    <Inbox size={48} className="mx-auto text-green-300" strokeWidth={1.5} />
+                    <h2 className="mt-4 text-xl font-semibold text-green-900">Танд одоогоор лавлагаа ирээгүй байна.</h2>
+                    <p className="mt-2 text-gray-600">Боломжит худалдан авагчид тантай холбогдоход тэдний зурвас энд гарч ирнэ.</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto shadow-md rounded-lg">
+                <div className="overflow-x-auto shadow-md rounded-lg border border-gray-200">
                     <table className="min-w-full divide-y divide-gray-200 bg-white">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buyer Information</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Received</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Үл хөдлөх хөрөнгө</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Худалдан авагчийн мэдээлэл</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Хүлээн авсан огноо</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Төлөв</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Үйлдэл</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                             {inquiries.map((inquiry) => (
-                                <tr key={inquiry._id} className="hover:bg-gray-50 transition-colors">
+                                <tr key={inquiry._id} className="hover:bg-gray-50/70 transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-gray-900" title={inquiry.property.title}>{inquiry.property.title}</div>
                                     </td>
@@ -109,8 +112,8 @@ const InquiriesPage = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(inquiry.date).toLocaleDateString()}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(inquiry.status)}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button className="text-blue-600 hover:text-blue-900 mr-4" title="View Inquiry"><Eye size={18} /></button>
-                                        <button className="text-green-600 hover:text-green-900" title="Reply to Inquiry"><MessageSquare size={18} /></button>
+                                        <button className="text-amber-600 hover:text-amber-800 mr-4 transition-colors" title="Лавлагааг харах"><Eye size={18} /></button>
+                                        <button className="text-green-600 hover:text-green-800 transition-colors" title="Лавлагаанд хариулах"><MessageSquare size={18} /></button>
                                     </td>
                                 </tr>
                             ))}

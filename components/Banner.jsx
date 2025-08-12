@@ -1,70 +1,67 @@
-'use client'
+// components/Banner.jsx
 
 import React from "react";
-import { assets } from "@/assets/assets"; // Make sure this path is correct
+import { assets } from "@/assets/assets";
 import Image from "next/image";
-import { useRouter } from "next/navigation"; // Use next/navigation for App Router
+import { useRouter } from "next/navigation";
 
-/**
- * A banner component designed to be a prominent hero section for the homepage.
- */
 const Banner = () => {
   const router = useRouter();
 
   const handleExploreClick = () => {
-    router.push('/all-properties'); // Navigate to the main property listing page
+    router.push('/all-properties');
   };
 
   const handleLearnMoreClick = () => {
-    router.push('/about-us'); // Navigate to an "About Us" or "Contact" page
+    router.push('/about-us');
   };
 
   return (
-    <div className="relative bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white my-16 rounded-xl overflow-hidden shadow-2xl">
+    <div className="relative bg-gradient-to-r from-green-800 via-green-900 to-black text-white my-16 rounded-2xl overflow-hidden shadow-2xl">
       {/* Background Image Container */}
       <div className="absolute inset-0">
         <Image
-          className="w-full h-full object-cover opacity-30"
-          src={assets.hero_background_image} // IMPORTANT: Replace with a high-quality real estate image from your assets
+          className="w-full h-full object-cover opacity-20"
+          src={assets.hero_background_image}
           alt="Modern house background"
           layout="fill"
-          priority // Prioritize loading this image as it's above the fold
+          priority
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
       </div>
-      
+
       {/* Content Container */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center py-24 px-4 md:px-0">
-        <h1 className="text-4xl md:text-5xl font-bold max-w-2xl leading-tight text-shadow-md">
-          Find Your Dream Home with Us
+      <div className="relative z-10 flex flex-col items-center justify-center text-center py-28 px-4 md:px-0">
+        <h1 className="text-4xl md:text-6xl font-extrabold max-w-3xl leading-tight text-shadow-lg">
+          Бидэнтэй хамт мөрөөдлийн <span className="text-yellow-400">гэрээ</span> олоорой
         </h1>
-        <p className="max-w-xl mt-4 text-lg text-gray-200">
-          We offer a curated selection of the finest properties, tailored to your lifestyle and preferences.
+        <p className="max-w-2xl mt-6 text-lg text-gray-300">
+          Бид таны амьдралын хэв маяг, сонголтод тохирсон хамгийн шилдэг үл хөдлөх хөрөнгийн сонголтыг санал болгож байна.
         </p>
-        
+
         {/* Call-to-Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-4">
-          <button 
+        <div className="mt-10 flex flex-col sm:flex-row gap-4">
+          <button
             onClick={handleExploreClick}
-            className="group flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 rounded-md text-white font-semibold hover:bg-blue-700 transition-all transform hover:scale-105"
+            className="group flex items-center justify-center gap-3 px-8 py-4 bg-yellow-400 rounded-lg text-black font-bold text-lg hover:bg-yellow-500 transition-all transform hover:scale-105 shadow-lg"
           >
-            Explore Properties
-            {/* You can use a real arrow icon from lucide-react or an Image as you prefer */}
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform">
+            Үл хөдлөх хөрөнгө хайх
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1.5 transition-transform">
               <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
             </svg>
           </button>
-          <button 
+          <button
             onClick={handleLearnMoreClick}
-            className="px-8 py-3 bg-white/10 border border-white/50 rounded-md text-white font-semibold hover:bg-white hover:text-gray-900 transition-colors backdrop-blur-sm"
+            className="px-8 py-4 bg-white/10 border border-white/40 rounded-lg text-white font-semibold text-lg hover:bg-white hover:text-green-900 transition-colors backdrop-blur-md shadow-lg"
           >
-            Learn More
+            Дэлгэрэнгүй
           </button>
         </div>
       </div>
-      
+
       <style jsx>{`
-        .text-shadow-md {
-          text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        .text-shadow-lg {
+          text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.6);
         }
       `}</style>
     </div>

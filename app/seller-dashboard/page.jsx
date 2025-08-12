@@ -1,13 +1,13 @@
-// Recommended file path: /app/seller-dashboard/page.jsx
+// Санал болгож буй файлын зам: /app/seller-dashboard/page.jsx
 'use client';
 
 import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Loading from "@/components/Loading"; // Assuming you have a loading spinner component
+import Loading from "@/components/Loading"; // Та ачааллын эргэлдэх дүрс бүхий компоненттой гэж үзье
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2 } from "lucide-react"; // Icons for action buttons
+import { Pencil, Trash2 } from "lucide-react"; // Үйлдлийн товчлуурын иконууд
 
 const SellerDashboard = () => {
     const router = useRouter();
@@ -17,34 +17,34 @@ const SellerDashboard = () => {
     useEffect(() => {
         const fetchSellerProperties = async () => {
             try {
-                // Fetch properties specifically for the logged-in seller
+                // Нэвтэрсэн борлуулагчид зориулсан үл хөдлөх хөрөнгийг татах
                 const response = await fetch('/api/property/seller-list');
                 const data = await response.json();
 
                 if (data.success) {
                     setProperties(data.properties);
                 } else {
-                    console.error("Failed to fetch properties:", data.message);
+                    console.error("Үл хөдлөх хөрөнгө татахад алдаа гарлаа:", data.message);
                 }
             } catch (error) {
-                console.error("An error occurred while fetching properties:", error);
+                console.error("Үл хөдлөх хөрөнгө татах үед алдаа гарлаа:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchSellerProperties();
-    }, []); // Empty dependency array ensures this runs once on mount
+    }, []); // Хоосон хамаарлын массив нь үүнийг холбох үед нэг удаа ажиллахыг баталгаажуулдаг
 
-    // Helper to get a styled badge for the status
+    // Төлөвийн хувьд загварчилсан тэмдэг авах туслах функц
     const getStatusBadge = (status) => {
         switch (status) {
             case 'For Sale':
-                return <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">{status}</span>;
+                return <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Зарагдана</span>;
             case 'For Rent':
-                return <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">{status}</span>;
+                return <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">Түрээслүүлнэ</span>;
             case 'Sold':
-                return <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{status}</span>;
+                return <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Зарагдсан</span>;
             default:
                 return <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">{status}</span>;
         }
@@ -55,12 +55,12 @@ const SellerDashboard = () => {
             <Navbar />
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">My Listings</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Миний зарууд</h1>
                     <button 
                         onClick={() => router.push('/list-property')}
                         className="bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                        + List New Property
+                        + Шинэ үл хөдлөх хөрөнгө бүртгэх
                     </button>
                 </div>
 
@@ -68,13 +68,13 @@ const SellerDashboard = () => {
                     <Loading />
                 ) : properties.length === 0 ? (
                     <div className="text-center py-20 border-2 border-dashed rounded-lg">
-                        <h2 className="text-xl font-semibold text-gray-900">You haven't listed any properties yet.</h2>
-                        <p className="mt-2 text-gray-600">Get started by listing your first property today.</p>
+                        <h2 className="text-xl font-semibold text-gray-900">Та одоогоор ямар ч үл хөдлөх хөрөнгө бүртгүүлээгүй байна.</h2>
+                        <p className="mt-2 text-gray-600">Өнөөдөр анхны үл хөдлөх хөрөнгөө бүртгүүлж эхлээрэй.</p>
                         <button 
                             onClick={() => router.push('/list-property')}
                             className="mt-6 bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors"
                         >
-                            List a Property
+                            Үл хөдлөх хөрөнгө бүртгэх
                         </button>
                     </div>
                 ) : (
@@ -82,11 +82,11 @@ const SellerDashboard = () => {
                         <table className="min-w-full divide-y divide-gray-200 bg-white">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Listed</th>
-                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Үл хөдлөх хөрөнгө</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Үнэ</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Төлөв</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Бүртгэгдсэн огноо</th>
+                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Үйлдэл</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">

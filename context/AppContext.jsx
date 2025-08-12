@@ -31,7 +31,7 @@ export const AppContextProvider = (props) => {
                 toast.error(data.message);
             }
         } catch (error) {
-            // console.error("Failed to fetch properties:", error.message);
+            // console.error("Үл хөдлөх хөрөнгө татахад алдаа гарлаа:", error.message);
         }
     }
 
@@ -46,14 +46,14 @@ export const AppContextProvider = (props) => {
 
             if (data.success) {
                 setUserData(data.user);
-                // --- FIX 1: Use the consistent American spelling ---
+                // --- ЗАСВАР 1: Тогтвортой америк англи үсгийн дүрмийг ашиглах ---
                 setFavorites(data.user.favorites || []);
             } else {
                 toast.error(data.message);
                 setUserData(null);
             }
         } catch (error) {
-            toast.error('API Error: ' + error.message);
+            toast.error('API-ийн алдаа: ' + error.message);
             setUserData(null);
         } finally {
             setIsLoading(false);
@@ -62,7 +62,7 @@ export const AppContextProvider = (props) => {
 
     const toggleFavorite = async (propertyId) => {
         if (!user) {
-            toast.error("Please log in to save properties.");
+            toast.error("Үл хөдлөх хөрөнгө хадгалахын тулд нэвтэрнэ үү.");
             router.push('/sign-in');
             return;
         }
@@ -76,13 +76,13 @@ export const AppContextProvider = (props) => {
 
         try {
             const token = await getToken();
-            // --- FIX 2: Use the consistent American spelling for the API route ---
+            // --- ЗАСВАР 2: API замд тогтвортой америк англи үсгийн дүрмийг ашиглах ---
             await axios.post('/api/user/favorites', { propertyId }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
         } catch (error) {
-            toast.error("Could not update favorites.");
-            setFavorites(favorites); // Revert UI on failure
+            toast.error("Дуртай зүйлсийг шинэчлэх боломжгүй байна.");
+            setFavorites(favorites); // Алдаа гарсан тохиолдолд UI-г буцаах
         }
     };
 

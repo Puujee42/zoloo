@@ -1,57 +1,71 @@
+// components/Footer.jsx
+
 import React from "react";
-import { assets } from "@/assets/assets"; // Assuming assets include a logo and social icons
 import Image from "next/image";
 import Link from "next/link";
+import { assets } from "@/assets/assets";
+import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
-// Fictional Icons for UI (replace with actual icon components e.g., from lucide-react or similar)
-const SocialIcon = ({ href, children }) => (
-  <a href={href} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-600 transition-colors">
-    {children}
+// A reusable Social Icon component for cleaner code
+const SocialIcon = ({ href, icon: Icon }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-gray-400 hover:text-yellow-400 hover:scale-110 transition-all"
+  >
+    <Icon size={22} />
   </a>
 );
 
-const FacebookIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">...</svg>; // Add SVG path
-const TwitterIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">...</svg>; // Add SVG path
-const InstagramIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">...</svg>; // Add SVG path
-const LinkedinIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">...</svg>; // Add SVG path
-
-
 const Footer = () => {
   return (
-    <footer className="bg-gray-50 text-gray-800 mt-20 md:mt-28">
-      <div className="container mx-auto px-6 md:px-8 lg:px-16 py-16">
-        {/* Top Section with Newsletter */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center mb-12 border-b pb-12">
-            <div className="lg:col-span-1">
-                <Image className="w-32" src={assets.logo} alt="logo" />
-                 <p className="mt-4 text-sm text-gray-600 max-w-sm">
-                    Your trusted partner in finding the perfect property. We are dedicated to making your real estate journey seamless and successful.
-                </p>
-            </div>
-            <div className="lg:col-span-2">
-                <h3 className="text-xl font-semibold text-gray-800">Stay Updated</h3>
-                <p className="text-gray-600 mt-1">Join our newsletter to get the latest properties and news.</p>
-                <form className="mt-4 flex flex-col sm:flex-row gap-3">
-                    <input
-                        type="email"
-                        placeholder="Enter your email"
-                        className="flex-grow px-4 py-2.5 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        aria-label="Email for newsletter"
-                    />
-                    <button type="submit" className="bg-blue-600 text-white font-semibold px-6 py-2.5 rounded-md hover:bg-blue-700 transition-colors">
-                        Subscribe
-                    </button>
-                </form>
-            </div>
+    // Main Footer: Set a dark green background and light base text color
+    <footer className="bg-green-900 text-gray-300 mt-20 md:mt-28">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 py-16">
+
+        {/* Top Section with Logo and Newsletter */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center mb-12 border-b border-white/20 pb-12">
+          {/* Logo and Brand Description */}
+          <div className="lg:col-span-1">
+            {/* --- FIX: Removed the unnecessary <a> tag and passHref prop --- */}
+            <Link href="/">
+              <Image className="w-36" src={assets.logo} alt="RealEstate Logo" />
+            </Link>
+            <p className="mt-4 text-sm text-gray-400 max-w-sm">
+              Төгс үл хөдлөх хөрөнгийг олоход таны найдвартай түнш. Бид таны үл хөдлөх хөрөнгийн аяллыг саадгүй, амжилттай болгоход зориулагдсан.
+            </p>
+          </div>
+
+          {/* Newsletter Signup */}
+          <div className="lg:col-span-2">
+            <h3 className="text-xl font-semibold text-white">Мэдээлэлтэй байгаарай</h3>
+            <p className="text-gray-400 mt-1">Хамгийн сүүлийн үеийн үл хөдлөх хөрөнгө болон мэдээг авахын тулд манай мэдээллийн товхимолд бүртгүүлнэ үү.</p>
+            <form className="mt-5 flex flex-col sm:flex-row gap-3">
+              <input
+                type="email"
+                placeholder="Имэйл хаягаа оруулна уу"
+                className="flex-grow px-4 py-3 rounded-md bg-white/10 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                aria-label="Мэдээллийн товхимолд бүртгүүлэх имэйл"
+              />
+              <button
+                type="submit"
+                className="bg-yellow-400 text-black font-bold px-6 py-3 rounded-md hover:bg-yellow-500 transition-colors transform hover:scale-105"
+              >
+                Бүртгүүлэх
+              </button>
+            </form>
+          </div>
         </div>
 
-        {/* Bottom Section with Links */}
+        {/* Bottom Section with Site Links and Info */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 text-sm">
-          {/* Contact Info - Spans 2 cols on smaller screens */}
+
+          {/* Contact Info */}
           <div className="col-span-2 sm:col-span-1 lg:col-span-1">
-            <h2 className="font-semibold text-gray-900 mb-4">Get in Touch</h2>
-            <div className="space-y-3 text-gray-600">
-              <p>123 Real Estate Ave, Suite 500<br/>Metropolis, USA 12345</p>
+            <h2 className="font-semibold text-white mb-4">Холбоо барих</h2>
+            <div className="space-y-3 text-gray-400">
+              <p>123 Үл хөдлөх хөрөнгийн өргөн чөлөө, 500 тоот<br />Метрополис, АНУ 12345</p>
               <p>+1 (234) 567-890</p>
               <p>contact@realestate.com</p>
             </div>
@@ -59,53 +73,53 @@ const Footer = () => {
 
           {/* Company Links */}
           <div>
-            <h2 className="font-semibold text-gray-900 mb-4">Company</h2>
-            <ul className="space-y-3 text-gray-600">
-              <li><Link href="/about" className="hover:text-blue-600 hover:underline">About Us</Link></li>
-              <li><Link href="/contact" className="hover:text-blue-600 hover:underline">Contact</Link></li>
-              <li><Link href="/careers" className="hover:text-blue-600 hover:underline">Careers</Link></li>
-              <li><Link href="/blog" className="hover:text-blue-600 hover:underline">Blog</Link></li>
+            <h2 className="font-semibold text-white mb-4">Компани</h2>
+            <ul className="space-y-3 text-gray-400">
+              <li><Link href="/about" className="hover:text-yellow-400 hover:underline">Бидний тухай</Link></li>
+              <li><Link href="/contact" className="hover:text-yellow-400 hover:underline">Холбоо барих</Link></li>
+              <li><Link href="/careers" className="hover:text-yellow-400 hover:underline">Ажлын байр</Link></li>
+              <li><Link href="/blog" className="hover:text-yellow-400 hover:underline">Блог</Link></li>
             </ul>
           </div>
 
-           {/* Properties Links */}
+          {/* Properties Links */}
           <div>
-            <h2 className="font-semibold text-gray-900 mb-4">Properties</h2>
-            <ul className="space-y-3 text-gray-600">
-              <li><Link href="/properties/for-sale" className="hover:text-blue-600 hover:underline">For Sale</Link></li>
-              <li><Link href="/properties/for-rent" className="hover:text-blue-600 hover:underline">For Rent</Link></li>
-              <li><Link href="/featured-properties" className="hover:text-blue-600 hover:underline">Featured</Link></li>
-              <li><Link href="/submit-property" className="hover:text-blue-600 hover:underline">Submit Property</Link></li>
+            <h2 className="font-semibold text-white mb-4">Үл хөдлөх хөрөнгө</h2>
+            <ul className="space-y-3 text-gray-400">
+              <li><Link href="/properties/for-sale" className="hover:text-yellow-400 hover:underline">Зарах</Link></li>
+              <li><Link href="/properties/for-rent" className="hover:text-yellow-400 hover:underline">Түрээслэх</Link></li>
+              <li><Link href="/featured-properties" className="hover:text-yellow-400 hover:underline">Онцлох</Link></li>
+              <li><Link href="/submit-property" className="hover:text-yellow-400 hover:underline">Зар оруулах</Link></li>
             </ul>
           </div>
 
           {/* Legal Links */}
           <div>
-            <h2 className="font-semibold text-gray-900 mb-4">Legal</h2>
-            <ul className="space-y-3 text-gray-600">
-              <li><Link href="/privacy-policy" className="hover:text-blue-600 hover:underline">Privacy Policy</Link></li>
-              <li><Link href="/terms-of-service" className="hover:text-blue-600 hover:underline">Terms of Service</Link></li>
-              <li><Link href="/disclaimer" className="hover:text-blue-600 hover:underline">Disclaimer</Link></li>
+            <h2 className="font-semibold text-white mb-4">Хууль эрх зүй</h2>
+            <ul className="space-y-3 text-gray-400">
+              <li><Link href="/privacy-policy" className="hover:text-yellow-400 hover:underline">Нууцлалын бодлого</Link></li>
+              <li><Link href="/terms-of-service" className="hover:text-yellow-400 hover:underline">Үйлчилгээний нөхцөл</Link></li>
             </ul>
           </div>
 
-            {/* Social Media */}
-            <div className="col-span-2 md:col-span-4 lg:col-span-1">
-                <h2 className="font-semibold text-gray-900 mb-4">Follow Us</h2>
-                <div className="flex items-center gap-4">
-                  {/* Replace with your actual social icons */}
-                  <SocialIcon href="#"><FacebookIcon /></SocialIcon>
-                  <SocialIcon href="#"><TwitterIcon /></SocialIcon>
-                  <SocialIcon href="#"><InstagramIcon /></SocialIcon>
-                  <SocialIcon href="#"><LinkedinIcon /></SocialIcon>
-                </div>
+          {/* Social Media */}
+          <div className="col-span-2 md:col-span-4 lg:col-span-1">
+            <h2 className="font-semibold text-white mb-4">Биднийг дагаарай</h2>
+            <div className="flex items-center gap-4">
+              <SocialIcon href="#" icon={Facebook} />
+              <SocialIcon href="#" icon={Twitter} />
+              <SocialIcon href="#" icon={Instagram} />
+              <SocialIcon href="#" icon={Linkedin} />
             </div>
+          </div>
         </div>
       </div>
-      <div className="bg-gray-100 py-4">
-          <p className="text-center text-xs md:text-sm text-gray-600">
-            Copyright © {new Date().getFullYear()} RealEstate Inc. All Rights Reserved.
-          </p>
+      
+      {/* Copyright Bar */}
+      <div className="bg-black/30 py-4">
+        <p className="text-center text-xs md:text-sm text-gray-500">
+          © {new Date().getFullYear()} RealEstate Inc. Бүх эрх хуулиар хамгаалагдсан.
+        </p>
       </div>
     </footer>
   );

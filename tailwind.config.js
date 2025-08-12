@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -7,10 +7,15 @@ export default {
   ],
   theme: {
     extend: {
+      // --- ADD THE NEW COLORS INSIDE colors {} ---
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // --- ADDED YOUR COLORS HERE ---
+        green: '#017666',
+        gold: '#BE8A27',
       },
+      //  ... other theme customizations can go here ...
       gridTemplateColumns:{
         'auto': 'repeat(auto-fit, minmax(200px, 1fr))'
       },

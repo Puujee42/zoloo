@@ -20,11 +20,12 @@ const propertySchema = new mongoose.Schema({
     area: { type: Number, required: true, comment: "Area in square feet" },
 
     // Categorization
-    status: {
-        type: String,
-        required: true,
-        enum: ["For Sale", "For Rent", "Sold"],
-        default: "For Sale"
+   status: {
+    type: String,
+    required: true,
+    // Add the Mongolian values to the list of allowed values
+    enum: ['For Sale', 'For Rent', 'Зарагдана', 'Түрээслүүлнэ'], 
+    default: 'For Sale',
     },
     type: {
         type: String,
