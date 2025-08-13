@@ -1,12 +1,12 @@
 // /app/api/user/sellers/route.js
 
 import { NextResponse } from 'next/server';
-import connectToDB from '@/config/mongodb';
+import connectDB from '@/config/db';
 import User from '@/models/User'; // Таны User модел
 
 export const GET = async () => {
     try {
-        await connectToDB();
+        await connectDB();
 
         // MongoDB aggregation ашиглан борлуулагчдыг олж, тэдний зарын тоог хамт тоолно.
         const sellers = await User.aggregate([
