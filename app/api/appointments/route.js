@@ -1,7 +1,7 @@
 // /app/api/appointments/route.js
 
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
+import { connectDB } from '@/config/db';
 import Appointment from '@/models/Appointment';
 import Property from '@/models/Property';
 import { getAuth } from '@clerk/nextjs/server';
