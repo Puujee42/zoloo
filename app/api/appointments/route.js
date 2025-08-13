@@ -7,7 +7,7 @@ import Property from '@/models/Property';
 import { getAuth } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs'; // Import the Clerk server client
 import { Resend } from 'resend'; // Import Resend
-import { SellerAppointmentRequestEmail } from '@/emails/SellerAppointmentRequest';
+import { SellerAppointmentRequestEmail } from '@/app/emails/SellerAppointmentRequest';
 import { BuyerAppointmentConfirmationEmail } from '@/app/emails/BuyerAppointmentConfirmation';
 
 // Initialize Resend with your API key from .env

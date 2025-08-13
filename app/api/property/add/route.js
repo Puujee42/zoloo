@@ -1,6 +1,6 @@
 // app/api/property/add/route.js
 import { NextResponse } from "next/server";
-import connectDB from "@/config/mongodb";
+import connectDB from "@/config/db";
 import Property from "@/models/Property";
 
 // POST /api/property/add
