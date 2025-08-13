@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
 import toast from "react-hot-toast";
-import { Pencil, Trash2, ListX } from "lucide-react"; // Added icon for empty state
+import { Pencil, Trash2, ListX, PlusCircle } from "lucide-react";
 
 const MyListingsPage = () => {
     const router = useRouter();
@@ -36,17 +36,16 @@ const MyListingsPage = () => {
     }, []);
 
     const getStatusBadge = (status) => {
-        const baseClasses = "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset";
+        const baseClasses = "inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset";
         switch (status) {
-            case 'For Sale': 
-                return <span className={`${baseClasses} bg-green-50 text-green-700 ring-green-600/20`}>{status}</span>;
-            // Changed blue to amber
-            case 'For Rent': 
-                return <span className={`${baseClasses} bg-amber-50 text-amber-800 ring-amber-600/20`}>{status}</span>;
-            case 'Sold': 
-                return <span className={`${baseClasses} bg-gray-100 text-gray-600 ring-gray-500/20`}>{status}</span>;
+            case 'Зарагдана': 
+                return <span className={`${baseClasses} bg-zolGreen/10 text-zolGreen ring-zolGreen/20`}>{status}</span>;
+            case 'Түрээслүүлнэ': 
+                return <span className={`${baseClasses} bg-zolGold/10 text-zolGold ring-zolGold/20`}>{status}</span>;
+            case 'Зарагдсан': 
+                return <span className={`${baseClasses} bg-gray-100 text-gray-700 ring-gray-200`}>{status}</span>;
             default: 
-                return <span className={`${baseClasses} bg-yellow-50 text-yellow-800 ring-yellow-600/20`}>{status}</span>;
+                return <span className={`${baseClasses} bg-blue-100 text-blue-800 ring-blue-600/20`}>{status}</span>;
         }
     };
 
@@ -55,60 +54,59 @@ const MyListingsPage = () => {
     }
 
     return (
-        <div className="w-full">
-            <div className="flex justify-between items-center mb-8">
-                {/* Themed heading */}
-                <h1 className="text-3xl font-bold text-green-900">Миний зарууд</h1>
-                {/* Themed button */}
+        <div className="w-full bg-zolGreen/5 p-8 rounded-lg min-h-full">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                {/* --- Гарчгийг Playfair фонттой болгосон --- */}
+                <h1 className="font-playfair text-3xl font-bold text-zolGreen">Миний зарууд</h1>
+                {/* --- Товчлуурыг zolGold болгосон --- */}
                 <button
                     onClick={() => router.push('/seller/list-property')}
-                    className="bg-amber-500 text-green-900 font-bold py-2 px-5 rounded-lg hover:bg-amber-600 transition-colors shadow-sm"
+                    className="flex items-center gap-2 bg-zolGold text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 shadow-md"
                 >
-                    + Шинэ зар нэмэх
+                    <PlusCircle size={18} /> Шинэ зар нэмэх
                 </button>
             </div>
 
             {properties.length === 0 ? (
-                <div className="text-center py-20 border-2 border-dashed rounded-lg bg-white">
-                    <ListX size={48} className="mx-auto text-green-300" strokeWidth={1.5} />
-                    {/* Themed empty state text */}
-                    <h2 className="mt-4 text-xl font-semibold text-green-900">Та одоогоор ямар ч зар оруулаагүй байна.</h2>
-                    <p className="mt-2 text-gray-600">Өнөөдөр анхны зараа оруулж эхэлнэ үү.</p>
+                // --- "Хоосон байна" мэдээллийг шинэчилсэн ---
+                <div className="text-center py-20 border-2 border-dashed border-gray-300 rounded-xl bg-white flex flex-col items-center justify-center">
+                    <ListX size={48} className="mx-auto text-zolGold/50 mb-4" strokeWidth={1.5} />
+                    <h2 className="text-2xl font-semibold text-zolDark">Та одоогоор зар оруулаагүй байна</h2>
+                    <p className="mt-2 text-zolDark/70">Өнөөдөр анхны зараа оруулж, борлуулалтаа эхлүүлнэ үү.</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto shadow-md rounded-lg border border-gray-200">
+                <div className="overflow-x-auto shadow-lg rounded-lg border border-gray-200">
                     <table className="min-w-full divide-y divide-gray-200 bg-white">
-                        <thead className="bg-gray-50">
+                        {/* --- Хүснэгтийн толгойг шинэчилсэн --- */}
+                        <thead className="bg-zolGreen/10">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Үл хөдлөх хөрөнгө</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Үнэ</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Төлөв</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Оруулсан огноо</th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Үйлдэл</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zolGreen uppercase tracking-wider">Үл хөдлөх хөрөнгө</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zolGreen uppercase tracking-wider">Үнэ</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zolGreen uppercase tracking-wider">Төлөв</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zolGreen uppercase tracking-wider">Огноо</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-zolGreen uppercase tracking-wider">Үйлдэл</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-gray-100">
                             {properties.map((property) => (
-                                <tr key={property._id} className="hover:bg-gray-50/70 transition-colors">
+                                <tr key={property._id} className="hover:bg-zolGold/5 transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-10 w-10">
-                                                <Image className="h-10 w-10 rounded-md object-cover" src={property.images[0]} alt={property.title} width={40} height={40} />
+                                            <div className="flex-shrink-0 h-11 w-11">
+                                                <Image className="h-11 w-11 rounded-md object-cover" src={property.images[0]} alt={property.title} width={44} height={44} />
                                             </div>
                                             <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900 truncate max-w-xs" title={property.title}>{property.title}</div>
-                                                <div className="text-sm text-gray-500 truncate max-w-xs" title={property.address}>{property.address}</div>
+                                                <div className="text-sm font-medium text-zolDark truncate max-w-xs" title={property.title}>{property.title}</div>
+                                                <div className="text-sm text-zolDark/70 truncate max-w-xs" title={property.address}>{property.address}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    {/* Themed price text */}
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-900 font-bold">₮{property.price.toLocaleString()}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zolGreen font-semibold">₮{property.price.toLocaleString()}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">{getStatusBadge(property.status)}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(property.createdAt).toLocaleDateString()}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zolDark/80">{new Date(property.createdAt).toLocaleDateString('mn-MN')}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        {/* Themed action buttons */}
-                                        <button className="text-amber-600 hover:text-amber-800 mr-4 transition-colors" title="Засах"><Pencil size={18} /></button>
-                                        <button className="text-red-600 hover:text-red-800 transition-colors" title="Устгах"><Trash2 size={18} /></button>
+                                        <button className="text-zolGold hover:opacity-80 mr-4 transition-colors" title="Засах"><Pencil size={18} /></button>
+                                        <button className="text-red-500 hover:text-red-700 transition-colors" title="Устгах"><Trash2 size={18} /></button>
                                     </td>
                                 </tr>
                             ))}

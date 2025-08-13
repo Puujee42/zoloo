@@ -7,30 +7,25 @@ import Footer from "@/components/Footer";
 import Image from "next/image";
 import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
-import PropertyCard from "@/components/PropertyCard"; // Reusable card
-import { BedDouble, Bath, LandPlot, Heart, Phone } from "lucide-react"; // Modern icons
+import PropertyCard from "@/components/PropertyCard";
+import { BedDouble, Bath, LandPlot, Heart, Phone } from "lucide-react";
 
-// A small sub-component for displaying key stats to keep the main return clean
+// StatItem-ийг шинэчилсэн
 const StatItem = ({ icon, label }) => (
-    <div className="flex flex-col items-center gap-2 text-center">
-        <div className="text-green-700">{icon}</div>
-        <span className="font-medium text-gray-800">{label}</span>
+    <div className="flex flex-col items-center gap-2 text-center p-2">
+        <div className="text-zolGreen">{icon}</div>
+        <span className="font-medium text-zolDark/90">{label}</span>
     </div>
 );
 
 export default function PropertyDetailsPage({ property, relatedProperties }) {
-    const { favorites, toggleFavorite } = useAppContext();
+    const { favorites, toggleFavorite, openAppointmentModal } = useAppContext();
     const [isFavorited, setIsFavorited] = useState(false);
 
-    // This is a fallback while data is fetched by the parent server component
-    if (!property) {
-        return <Loading />;
-    }
+    if (!property) return <Loading />;
 
-    // State for the main image gallery display
-    const [selectedImage, setSelectedImage] = useState(property.images[0]);
+    const [selectedImage, setSelectedImage] = useState(property.images?.[0]);
 
-    // Checks if the current property is in the favorites list
     useEffect(() => {
         setIsFavorited(favorites.includes(property._id));
     }, [favorites, property._id]);
@@ -39,86 +34,81 @@ export default function PropertyDetailsPage({ property, relatedProperties }) {
         toggleFavorite(property._id);
     };
 
+    const handleBookTourClick = () => {
+        openAppointmentModal(property);
+    };
+
     return (
         <>
             <Navbar />
-            <div className="bg-gray-50">
+            {/* --- 1. Дэвсгэрийг zolGreen/5 болгосон --- */}
+            <div className="bg-zolGreen/5">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-                    {/* --- Main Grid for Property Details --- */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                         
-                        {/* --- Image Gallery (Left Side) --- */}
+                        {/* --- Зургийн Галерей --- */}
                         <div className="lg:col-span-2">
                             <div className="aspect-w-16 aspect-h-10 w-full overflow-hidden rounded-xl shadow-lg border border-gray-200 mb-4">
                                 <Image
                                     src={selectedImage}
                                     alt={property.title}
-                                    width={1280}
-                                    height={800}
+                                    width={1280} height={800}
                                     className="h-full w-full object-cover"
                                     priority
                                 />
                             </div>
-                            <div className="grid grid-cols-5 gap-3">
+                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
                                 {property.images.map((image, index) => (
                                     <button
                                         key={index}
                                         onClick={() => setSelectedImage(image)}
-                                        className={`aspect-square w-full rounded-lg overflow-hidden border-2 transition-all duration-200 ${selectedImage === image ? 'border-amber-500 scale-105 shadow-md' : 'border-transparent hover:border-amber-400'}`}
+                                        // --- 5. Идэвхтэй зургийн хүрээг zolGold болгосон ---
+                                        className={`aspect-square w-full rounded-lg overflow-hidden border-2 transition-all duration-200 ${selectedImage === image ? 'border-zolGold scale-105 shadow-md' : 'border-transparent hover:border-zolGold/70'}`}
                                     >
-                                        <Image
-                                            src={image}
-                                            alt={`${property.title} thumbnail ${index + 1}`}
-                                            width={200}
-                                            height={200}
-                                            className="h-full w-full object-cover"
-                                        />
+                                        <Image src={image} alt={`${property.title} thumbnail ${index + 1}`} width={200} height={200} className="h-full w-full object-cover" />
                                     </button>
                                 ))}
                             </div>
                         </div>
 
-                        {/* --- Property Info (Right Side) --- */}
+                        {/* --- 2. Мэдээллийн хэсгийг шинэчилсэн --- */}
                         <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 space-y-6">
-                            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-green-900">{property.title}</h1>
-                            <p className="text-lg text-gray-600">{property.address}</p>
-                            <p className="text-5xl font-extrabold text-green-900">${property.price.toLocaleString()}</p>
+                            <h1 className="font-playfair text-3xl md:text-4xl font-bold tracking-tight text-zolGreen">{property.title}</h1>
+                            <p className="text-lg text-zolDark/80">{property.address}</p>
+                            <p className="font-playfair text-5xl font-bold text-zolGreen">{property.price.toLocaleString()}₮</p>
                             
-                            {/* Key Stats using the StatItem component */}
-                            <div className="grid grid-cols-3 gap-4 text-center border-t border-b border-gray-200 py-5">
+                            <div className="grid grid-cols-3 gap-4 text-center border-t border-b border-gray-100 py-5">
                                 <StatItem icon={<BedDouble size={28}/>} label={`${property.bedrooms} Ор`} />
-                                <StatItem icon={<Bath size={28}/>} label={`${property.bathrooms} Угаалгын өрөө`} />
-                                <StatItem icon={<LandPlot size={28}/>} label={`${property.area.toLocaleString()} м.кв`} />
+                                <StatItem icon={<Bath size={28}/>} label={`${property.bathrooms} Угаалгын`} />
+                                <StatItem icon={<LandPlot size={28}/>} label={`${property.area.toLocaleString()} м²`} />
                             </div>
 
-                            {/* Description */}
                             <div>
-                                <h3 className="font-bold text-lg text-green-900 mb-2">Энэ үл хөдлөх хөрөнгийн тухай</h3>
-                                <p className="text-gray-700 leading-relaxed">{property.description}</p>
+                                <h3 className="font-semibold text-lg text-zolDark mb-2">Энэ үл хөдлөх хөрөнгийн тухай</h3>
+                                <p className="text-zolDark/90 leading-relaxed">{property.description}</p>
                             </div>
 
-                            {/* Features */}
                             {property.features && property.features.length > 0 && (
-                                <div className="border-t border-gray-200 pt-6">
-                                    <h3 className="font-bold text-lg text-green-900 mb-3">Онцлог ба тав тухтай байдал</h3>
+                                <div className="border-t border-gray-100 pt-6">
+                                    <h3 className="font-semibold text-lg text-zolDark mb-3">Онцлог ба давуу тал</h3>
                                     <div className="flex flex-wrap gap-3">
                                     {property.features.map(feature => (
-                                        <span key={feature} className="bg-green-100 text-green-800 text-sm font-semibold px-4 py-2 rounded-full">{feature}</span>
+                                        <span key={feature} className="bg-zolGreen/10 text-zolGreen text-sm font-medium px-4 py-2 rounded-full">{feature}</span>
                                     ))}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Action Buttons */}
+                            {/* --- 3. Товчлууруудыг шинэчилсэн --- */}
                             <div className="flex items-center gap-4 pt-4">
-                                <button className="flex-1 inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-green-900 font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105">
+                                <button onClick={handleBookTourClick} className="flex-1 inline-flex items-center justify-center gap-3 bg-zolGold text-white font-semibold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 shadow-md">
                                     <Phone size={18} />
-                                    Танилцах цаг товлох
+                                    Цаг товлох
                                 </button>
                                 <button 
                                     onClick={handleFavoriteClick} 
-                                    aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
-                                    className={`p-3 rounded-lg border-2 transition-colors ${isFavorited ? 'bg-red-100 border-red-500 text-red-500' : 'bg-gray-100 border-gray-200 text-gray-600 hover:border-pink-400 hover:text-pink-500'}`}
+                                    aria-label={isFavorited ? "Хадгалснаас устгах" : "Хадгалах"}
+                                    className={`p-3 rounded-lg border-2 transition-colors ${isFavorited ? 'bg-zolGold/10 border-zolGold text-zolGold' : 'bg-gray-100 border-gray-200 text-gray-600 hover:border-zolGold/70 hover:text-zolGold'}`}
                                 >
                                     <Heart fill={isFavorited ? 'currentColor' : 'none'} />
                                 </button>
@@ -126,15 +116,17 @@ export default function PropertyDetailsPage({ property, relatedProperties }) {
                         </div>
                     </div>
 
-                    {/* --- Related Properties Section --- */}
-                    <div className="mt-24 border-t border-gray-200 pt-16">
-                        <h2 className="text-3xl font-bold text-green-900 mb-8">Танд таалагдаж болох төстэй үл хөдлөх хөрөнгө</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {relatedProperties && relatedProperties.map(prop => (
-                                <PropertyCard key={prop._id} property={prop} />
-                            ))}
+                    {/* --- 4. Төстэй заруудын гарчгийг шинэчилсэн --- */}
+                    {relatedProperties && relatedProperties.length > 0 && (
+                        <div className="mt-24 border-t border-gray-200 pt-16">
+                            <h2 className="font-playfair text-3xl font-bold text-zolGreen mb-8">Танд таалагдаж болох зарууд</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                {relatedProperties.map(prop => (
+                                    <PropertyCard key={prop._id} property={prop} />
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
             <Footer />

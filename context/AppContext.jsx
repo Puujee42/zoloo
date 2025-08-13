@@ -22,6 +22,27 @@ export const AppContextProvider = (props) => {
     const [favorites, setFavorites] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    // --- 1. ШИНЭЭР НЭМСЭН ХЭСЭГ: Танилцах цагийн модал удирдах ---
+    const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+    const [appointmentProperty, setAppointmentProperty] = useState(null);
+
+    const openAppointmentModal = (property) => {
+        if (!user) {
+            toast.error("Цаг товлохын тулд эхлээд нэвтэрнэ үү.");
+            // Эсвэл sign-in хуудас руу үсэргэж болно
+            // router.push('/sign-in');
+            return;
+        }
+        setAppointmentProperty(property);
+        setIsAppointmentModalOpen(true);
+    };
+
+    const closeAppointmentModal = () => {
+        setIsAppointmentModalOpen(false);
+        setAppointmentProperty(null);
+    };
+    // -----------------------------------------------------------
+
     const fetchPropertyData = async () => {
         try {
             const { data } = await axios.get('/api/property/list');
@@ -46,7 +67,6 @@ export const AppContextProvider = (props) => {
 
             if (data.success) {
                 setUserData(data.user);
-                // --- ЗАСВАР 1: Тогтвортой америк англи үсгийн дүрмийг ашиглах ---
                 setFavorites(data.user.favorites || []);
             } else {
                 toast.error(data.message);
@@ -76,18 +96,13 @@ export const AppContextProvider = (props) => {
 
         try {
             const token = await getToken();
-            // --- ЗАСВАР 2: API замд тогтвортой америк англи үсгийн дүрмийг ашиглах ---
             await axios.post('/api/user/favorites', { propertyId }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
         } catch (error) {
             toast.error("Дуртай зүйлсийг шинэчлэх боломжгүй байна.");
-            setFavorites(favorites); // Алдаа гарсан тохиолдолд UI-г буцаах
+            setFavorites(favorites);
         }
-    };
-
-    const getFavoritesCount = () => {
-        return favorites.length;
     };
 
     useEffect(() => {
@@ -119,7 +134,12 @@ export const AppContextProvider = (props) => {
         favorites,
         setFavorites,
         toggleFavorite,
-        getFavoritesCount
+        
+        // --- 2. ШИНЭЭР НЭМСЭН УТГУУДЫГ context-д дамжуулах ---
+        isAppointmentModalOpen,
+        appointmentProperty,
+        openAppointmentModal,
+        closeAppointmentModal
     };
 
     return (

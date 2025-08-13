@@ -1,22 +1,24 @@
-'use client'
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import PropertyCard from '@/components/PropertyCard';
 import PropertyCardSkeleton from '@/components/PropertyCardSkeleton';
 import FilterBar from '@/components/FilterBar';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer'; // Footer-г нэмэх
+import { SearchX } from 'lucide-react'; // "Олдсонгүй" хэсэгт зориулсан icon
 
 export default function PropertyListPage() {
-    // Destructure properties and loading state from the global app context.
     const { properties, isLoading } = useAppContext();
-
-    // State to hold the current filter settings from the FilterBar component.
     const [filters, setFilters] = useState(null);
 
-    // useMemo re-calculates the filtered properties only when dependencies change.
     const filteredProperties = useMemo(() => {
-        if (!properties || !filters) {
-            return properties;
+        if (!properties) {
+            return []; // Эхний ачаалалтын үед properties null байж болох тул хоосон массив буцаана
+        }
+        if (!filters) {
+            return properties; // Шүүлтүүр хийгдээгүй бол бүгдийг буцаана
         }
 
         return properties.filter(property => {
@@ -36,11 +38,10 @@ export default function PropertyListPage() {
         setFilters(newFilters);
     };
     
-    // Renders the appropriate content based on the loading and filtered data state.
     const renderContent = () => {
         if (isLoading) {
             return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     {Array.from({ length: 8 }).map((_, index) => (
                         <PropertyCardSkeleton key={index} />
                     ))}
@@ -50,7 +51,7 @@ export default function PropertyListPage() {
 
         if (filteredProperties.length > 0) {
             return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     {filteredProperties.map(property => (
                         <PropertyCard key={property._id} property={property} />
                     ))}
@@ -58,29 +59,36 @@ export default function PropertyListPage() {
             );
         }
 
-        // Message shown when no properties match the selected filters.
+        // --- "Олдсонгүй" мэдээллийг шинэчилсэн ---
         return (
-            <div className="text-center py-20 border-2 border-dashed border-gray-300 rounded-lg">
-                <h2 className="text-xl font-semibold text-green-900">Үл хөдлөх хөрөнгө олдсонгүй</h2>
-                <p className="mt-2 text-gray-600">Илүү их үр дүн олохын тулд шүүлтүүрээ тохируулж үзнэ үү.</p>
+            <div className="text-center py-20 border-2 border-dashed border-gray-300 rounded-xl bg-white flex flex-col items-center justify-center">
+                <SearchX size={48} className="text-gray-400 mb-4" />
+                <h2 className="text-2xl font-semibold text-zolDark">Үл хөдлөх хөрөнгө олдсонгүй</h2>
+                <p className="mt-2 text-zolDark/70">Илүү их үр дүн харахын тулд шүүлтүүрээ өөрчилж үзнэ үү.</p>
             </div>
         );
     };
 
     return (
-        <div className="bg-gray-50 min-h-screen">
+        // --- 1. Дэвсгэрийг zolGreen/5 болгосон ---
+        <div className="bg-zolGreen/5 min-h-screen">
             <Navbar />
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <h1 className="text-3xl md:text-4xl font-bold mb-2 text-green-900">Бүх үл хөдлөх хөрөнгө</h1>
-                <p className="text-gray-600 mb-8">Төгс гэрээ олохын тулд доорх шүүлтүүрүүдийг ашиглана уу.</p>
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                {/* --- 2. Гарчгийг Playfair фонттой болгосон --- */}
+                <h1 className="font-playfair text-4xl md:text-5xl font-bold mb-2 text-zolGreen">
+                    Бүх Зар
+                </h1>
+                <p className="text-zolDark/70 mb-8">
+                    Төгс гэрээ олохын тулд доорх шүүлтүүрүүдийг ашиглана уу.
+                </p>
 
-                {/* --- The FilterBar component with the onFilterChange handler --- */}
                 <FilterBar onFilterChange={handleFilterChange} />
                 
-                <div className="mt-10">
+                <div className="mt-12">
                     {renderContent()}
                 </div>
             </div>
+            <Footer />
         </div>
     );
 }

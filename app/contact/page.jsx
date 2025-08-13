@@ -13,27 +13,29 @@ const ContactPage = () => {
     e.target.reset();
   };
 
-  // Consistent styling for input fields
-  const inputStyle = "block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring focus:ring-amber-500 focus:ring-opacity-50 py-2.5 px-3";
+  // --- 1. Input талбарын загварыг шинэчилсэн ---
+  const inputStyle = "block w-full rounded-md border-gray-300 shadow-sm focus:border-zolGold focus:ring-zolGold py-3 px-4 transition-colors duration-200";
 
   return (
     <>
       <Navbar />
-      <div className="bg-gray-50">
+      {/* --- 2. Дэвсгэрийг zolGreen/5 болгосон --- */}
+      <div className="bg-zolGreen/5">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
 
+          {/* --- 3. Гарчгийг Playfair фонттой болгосон --- */}
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-bold text-green-900">Бидэнтэй холбогдох</h1>
-            <p className="mt-4 text-lg text-gray-600">
+            <h1 className="font-playfair text-4xl md:text-5xl font-bold text-zolGreen">Бидэнтэй холбогдох</h1>
+            <p className="mt-4 text-lg text-zolDark/80 leading-relaxed">
               Танд асуулт байна уу эсвэл үл хөдлөх хөрөнгөтэй танилцах цаг товлохыг хүсэж байна уу? Бид танаас сонсохдоо таатай байх болно. Доорх аргуудын аль нэгээр бидэнтэй холбогдоорой.
             </p>
           </div>
 
-          <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16">
+          <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-16">
             
-            {/* Contact Form with Green and Gold Theme */}
-            <div className="bg-white p-8 rounded-xl shadow-xl border border-gray-200">
-              <h2 className="text-2xl font-bold mb-6 text-green-900">Бидэнд зурвас илгээх</h2>
+            {/* --- 4. Холбоо барих маягтыг шинэчилсэн --- */}
+            <div className="bg-white p-8 rounded-xl shadow-2xl border border-gray-100">
+              <h2 className="text-2xl font-semibold mb-6 text-zolDark">Бидэнд зурвас илгээх</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="name" className="sr-only">Таны нэр</label>
@@ -47,36 +49,37 @@ const ContactPage = () => {
                   <label htmlFor="message" className="sr-only">Таны зурвас</label>
                   <textarea id="message" placeholder="Таны зурвас" rows="5" className={`${inputStyle} resize-none`} required></textarea>
                 </div>
+                {/* --- Товчлуурыг zolGold болгосон --- */}
                 <button 
                   type="submit" 
-                  className="w-full bg-amber-500 text-green-900 font-bold py-3 px-6 rounded-lg hover:bg-amber-600 transition-all transform hover:scale-105 shadow-md"
+                  className="w-full bg-zolGold text-white font-semibold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 shadow-md"
                 >
                   Зурвас илгээх
                 </button>
               </form>
             </div>
             
-            {/* Contact Information with Themed Icons */}
+            {/* --- 5. Холбоо барих мэдээллийн хэсгийг шинэчилсэн --- */}
             <div className="space-y-10 pt-4">
                 <div className="flex items-start gap-5">
-                    <div className="bg-green-100 p-4 rounded-full"><MapPin className="h-7 w-7 text-green-800"/></div>
+                    <div className="bg-zolGreen/10 p-4 rounded-full"><MapPin className="h-7 w-7 text-zolGreen"/></div>
                     <div>
-                        <h3 className="text-xl font-bold text-green-900">Манай оффис</h3>
-                        <p className="mt-1 text-gray-600">123 Үл хөдлөх хөрөнгийн гудамж, 500 тоот, Метрополис, АНУ 12345</p>
+                        <h3 className="text-xl font-semibold text-zolDark">Манай оффис</h3>
+                        <p className="mt-1 text-zolDark/80">123 ZOL өргөн чөлөө, 500 тоот, Улаанбаатар, Монгол 12345</p>
                     </div>
                 </div>
                 <div className="flex items-start gap-5">
-                    <div className="bg-green-100 p-4 rounded-full"><Mail className="h-7 w-7 text-green-800"/></div>
+                    <div className="bg-zolGreen/10 p-4 rounded-full"><Mail className="h-7 w-7 text-zolGreen"/></div>
                     <div>
-                        <h3 className="text-xl font-bold text-green-900">Бидэнд имэйл илгээх</h3>
-                        <a href="mailto:contact@realestate.com" className="mt-1 text-gray-600 hover:text-amber-600 transition-colors">contact@realestate.com</a>
+                        <h3 className="text-xl font-semibold text-zolDark">Бидэнд имэйл илгээх</h3>
+                        <a href="mailto:contact@zol.mn" className="mt-1 text-zolDark/80 hover:text-zolGold transition-colors">contact@zol.mn</a>
                     </div>
                 </div>
                 <div className="flex items-start gap-5">
-                    <div className="bg-green-100 p-4 rounded-full"><Phone className="h-7 w-7 text-green-800"/></div>
+                    <div className="bg-zolGreen/10 p-4 rounded-full"><Phone className="h-7 w-7 text-zolGreen"/></div>
                     <div>
-                        <h3 className="text-xl font-bold text-green-900">Бидэн рүү залгах</h3>
-                        <a href="tel:+1234567890" className="mt-1 text-gray-600 hover:text-amber-600 transition-colors">+1 (234) 567-890</a>
+                        <h3 className="text-xl font-semibold text-zolDark">Бидэн рүү залгах</h3>
+                        <a href="tel:+97688000000" className="mt-1 text-zolDark/80 hover:text-zolGold transition-colors">+976 8800-0000</a>
                     </div>
                 </div>
             </div>

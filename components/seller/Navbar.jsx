@@ -1,48 +1,48 @@
 'use client'
 
 import React from 'react';
-import { assets } from '@/assets/assets'; // Ensure this path is correct for your project
+import { assets } from '@/assets/assets';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { UserButton } from '@clerk/nextjs'; // Importing the UserButton component from Clerk
+import { UserButton } from '@clerk/nextjs';
+import Link from 'next/link'; // Link-ийг импортлох
 
 const Navbar = () => {
   const router = useRouter();
 
   return (
-    // The main container with a thematic green bottom border and a subtle shadow.
-    <div className='flex items-center px-4 md:px-8 py-3 justify-between border-b border-green-200 bg-white shadow-sm'>
+    // --- 1. Navbar-ийн өндөр, доторх зайг нэмэгдүүлсэн ---
+    <div className='flex items-center px-6 md:px-8 py-4 justify-between border-b border-gray-200 bg-white shadow-sm'>
       
-      {/* --- Left Side: Logo and Dashboard Title --- */}
+      {/* --- 2. Логог үндсэн Navbar-тай ижил болгосон --- */}
       <div className="flex items-center gap-4">
-        {/* The clickable logo with a hover effect for better UX. */}
-        <Image 
-          onClick={() => router.push('/')} 
-          className='w-28 cursor-pointer transition-opacity hover:opacity-80' 
-          src={assets.logo} 
-          alt="Лого"
-          width={120} // Added for Next.js Image optimization
-          height={40} // Added for Next.js Image optimization
-          priority // Prioritizes loading the logo, which is often a key visual element.
-        />
+        <Link href="/" className="flex items-center gap-3">
+            <Image
+                className="h-10 w-auto" // Логоны өндрийг тохируулсан
+                src={assets.logo}
+                alt="ZOL Logo"
+                width={40}
+                height={40}
+                priority
+            />
+            <span className="hidden sm:block font-playfair font-bold text-3xl text-zolGreen">
+                ZOL
+            </span>
+        </Link>
         
-        {/* A visual separator that only appears on medium screens and larger. */}
-        <div className="h-6 w-px bg-gray-200 hidden md:block"></div>
+        <div className="h-7 w-px bg-gray-300 hidden md:block"></div>
         
-        {/* The themed title, styled with the primary brand color (deep green). */}
-        <h1 className="text-lg font-bold text-green-900 hidden md:block">
-          Борлуулагчийн Хяналтын самбар
+        {/* --- 3. Гарчгийн өнгийг zolGreen болгосон --- */}
+        <h1 className="text-lg font-semibold text-zolDark hidden md:block">
+          Борлуулагчийн Самбар
         </h1>
       </div>
 
-      {/* --- Right Side: User Actions --- */}
+      {/* --- Баруун тал: Хэрэглэгчийн үйлдэл --- */}
       <div className="flex items-center">
-        {/* 
-          This pre-built UserButton from Clerk automatically handles all
-          user authentication actions like showing the profile picture and
-          providing a sign-out option.
-        */}
-        <UserButton afterSignOutUrl="/" />
+        <div className="w-9 h-9">
+            <UserButton afterSignOutUrl="/" />
+        </div>
       </div>
 
     </div>

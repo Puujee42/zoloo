@@ -15,19 +15,19 @@ const FeaturedProperties = () => {
   const featuredProperties = properties?.slice(0, 3) || [];
 
   return (
-    // --- 1. Container: Use a subtle, light background ---
-    <div className="bg-gray-50 py-20 md:py-28 px-4 sm:px-6 lg:px-8">
+    // --- 1. Дэвсгэрийг брэндийн өнгөтэйгөө уялдуулсан ---
+    <div className="bg-zolGreen/5 py-20 md:py-28 px-4 sm:px-6 lg:px-8">
       {/* Section Header */}
-      <div className="flex flex-col items-center text-center mb-12">
-        {/* --- 2. Heading: Style with a rich, dark green --- */}
-        <h2 className="text-3xl md:text-4xl font-extrabold text-green-900">
+      <div className="flex flex-col items-center text-center mb-16">
+        {/* --- 2. Гарчгийг Playfair Display фонт, ногоон өнгөтэй болгосон --- */}
+        <h2 className="font-playfair font-bold text-4xl md:text-5xl text-zolGreen">
           Онцлох Үл Хөдлөх Хөрөнгө
         </h2>
-        <p className="mt-4 text-gray-600 max-w-2xl text-lg">
+        <p className="mt-4 text-zolDark/70 max-w-2xl text-lg leading-relaxed">
           Тансаг зэрэглэлийн харшаас эхлээд тохилог гэр бүлийн байшин хүртэлх бидний онцгойлон сонгосон үл хөдлөх хөрөнгүүдтэй танилцана уу.
         </p>
-        {/* --- 3. Separator: Style with a vibrant gold --- */}
-        <div className="w-28 h-1 bg-yellow-400 mt-6 rounded-full"></div>
+        {/* --- 3. Ялгах зураасыг алтан шаргал өнгөтэй болгосон --- */}
+        <div className="w-28 h-1 bg-zolGold mt-6 rounded-full"></div>
       </div>
 
       {/* Properties Grid */}

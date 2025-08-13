@@ -1,22 +1,19 @@
 // /components/HeaderSlider.jsx
 
-'use client' // This component uses hooks, so it must be a client component.
+'use client'
 
 import React, { useState, useEffect } from 'react';
 import Image from "next/image";
-import { useAppContext } from "@/context/AppContext"; // Import the AppContext
-import { useRouter } from "next/navigation"; // Import the Next.js router
-import { BedDouble, Bath, LandPlot, MoveRight } from "lucide-react"; // Import icons
-import { assets } from '@/assets/assets'; // Import your assets
+import { useAppContext } from "@/context/AppContext";
+import { useRouter } from "next/navigation";
+import { BedDouble, Bath, LandPlot, MoveRight } from "lucide-react";
+import { assets } from '@/assets/assets';
 
 const HeaderSlider = () => {
-  // --- 1. Get properties and loading state from the global context ---
   const { properties, isLoading } = useAppContext();
   const router = useRouter();
 
-  // --- 2. Select the first 3 properties for the slider ---
   const sliderProperties = properties.slice(0, 3);
-
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Auto-slide functionality
@@ -37,7 +34,7 @@ const HeaderSlider = () => {
     router.push(`/property/${propertyId}`);
   };
 
-  // --- 3. Display a skeleton loader while properties are being fetched ---
+  // Skeleton loader
   if (isLoading) {
     return (
       <div className="relative w-full h-[70vh] md:h-[85vh] overflow-hidden rounded-2xl mt-6 shadow-2xl bg-gray-300 animate-pulse">
@@ -55,9 +52,8 @@ const HeaderSlider = () => {
     );
   }
 
-  // --- 4. Don't render the component if there are no properties to display ---
   if (!sliderProperties || sliderProperties.length === 0) {
-    return null; // Or return a placeholder message
+    return null;
   }
 
   return (
@@ -70,18 +66,17 @@ const HeaderSlider = () => {
         {sliderProperties.map((property) => (
           <div key={property._id} className="relative min-w-full h-full text-white">
             {/* Background Image */}
-            {/* --- FIX:  Conditionally render the Image if the image array is not null or empty--- */}
             {property?.images && property.images.length > 0 ? (
                <Image
                    src={property.images[0]}
                    alt={property.title}
                    fill
                    className="z-0 object-cover"
-                   priority={true} // Prioritize loading the first image
+                   priority={true}
                />
             ) : (
-               <Image // Fallback image if no image is available
-                   src={assets.fallback_property_image} // Replace with your fallback path
+               <Image
+                   src={assets.fallback_property_image}
                    alt={property.title}
                    fill
                    className="z-0 object-cover"
@@ -94,33 +89,34 @@ const HeaderSlider = () => {
 
             {/* Content */}
             <div className="relative z-20 flex flex-col justify-end h-full p-8 md:p-16">
-              <h1 className="text-3xl md:text-5xl font-bold max-w-3xl leading-tight" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>
+              {/* --- 1. Гарчгийг Playfair Display фонтоор сольсон --- */}
+              <h1 className="font-playfair font-bold text-3xl md:text-5xl max-w-3xl leading-tight drop-shadow-lg">
                 {property.title}
               </h1>
-              <p className="mt-4 max-w-2xl text-lg text-gray-200" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.7)' }}>
+              <p className="mt-4 max-w-2xl text-lg text-white/90 drop-shadow-md">
                 {property.description}
               </p>
               
               {/* Property Details */}
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-6 text-gray-200">
-                  <div className="flex items-center gap-2"><BedDouble size={20} /> {property.bedrooms} Ор</div>
-                  <div className="flex items-center gap-2"><Bath size={20} /> {property.bathrooms} Угаалгын өрөө</div>
-                  <div className="flex items-center gap-2"><LandPlot size={20} /> {property.area.toLocaleString()} м²</div>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-6 text-white/90">
+                  <div className="flex items-center gap-2 drop-shadow-sm"><BedDouble size={20} /> {property.bedrooms} Ор</div>
+                  <div className="flex items-center gap-2 drop-shadow-sm"><Bath size={20} /> {property.bathrooms} Угаалгын өрөө</div>
+                  <div className="flex items-center gap-2 drop-shadow-sm"><LandPlot size={20} /> {property.area.toLocaleString()} м²</div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-start gap-4 mt-8">
+                {/* --- 2. Үндсэн товчлуурыг zolGold болгосон --- */}
                 <button 
                   onClick={() => handleViewDetails(property._id)}
-                  // --- 5. Styled with gold to match the brand ---
-                  className="px-8 py-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition-all transform hover:scale-105 shadow-lg"
+                  className="px-8 py-3 bg-zolGold text-white rounded-full font-semibold hover:bg-opacity-90 transition-all transform hover:scale-105 shadow-lg"
                 >
-                  Үл хөдлөх хөрөнгийн дэлгэрэнгүйг харах
+                  Дэлгэрэнгүй харах
                 </button>
+                {/* --- 3. Хоёрдогч товчлуурын загварыг шинэчилсэн --- */}
                 <button 
                   onClick={() => router.push('/contact')}
-                  // --- 6. Styled for secondary action, consistent with other components ---
-                  className="group flex items-center gap-2 px-8 py-3 font-semibold bg-white/10 backdrop-blur-sm border border-white/40 rounded-lg hover:bg-white hover:text-green-900 transition-colors shadow-lg"
+                  className="group flex items-center gap-2 px-8 py-3 font-semibold bg-transparent border-2 border-zolGold rounded-full text-white hover:bg-zolGold transition-colors shadow-lg"
                 >
                   Агенттай холбогдох
                   <MoveRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -137,17 +133,17 @@ const HeaderSlider = () => {
           <div
             key={property._id}
             onClick={() => handleSlideChange(index)}
-            // --- 7. Active border is now gold ---
+            // --- 4. Идэвхтэй хүрээг zolGold болгосон ---
             className={`cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-300 ${
-              currentSlide === index ? "border-yellow-400 scale-110 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"
+              currentSlide === index ? "border-zolGold scale-110 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"
             }`}
           >
             <Image
-                src={property.images[0]}
+                src={property.images?.[0] || assets.fallback_property_image} // Fallback for thumbnail
                 alt={`Thumbnail ${index + 1}`}
                 width={80}
                 height={50}
-                className="object-cover"
+                className="object-cover h-[50px]" // Ensure consistent height
             />
           </div>
         ))}

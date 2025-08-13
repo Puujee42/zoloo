@@ -1,13 +1,14 @@
-// Санал болгож буй файлын зам: /app/seller-dashboard/page.jsx
-'use client';
+// /app/seller-dashboard/page.jsx
+'use client'
 
 import React, { useEffect, useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import Loading from "@/components/Loading"; // Та ачааллын эргэлдэх дүрс бүхий компоненттой гэж үзье
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2 } from "lucide-react"; // Үйлдлийн товчлуурын иконууд
+import Loading from "@/components/Loading";
+import toast from "react-hot-toast";
+import { Pencil, Trash2, ListX, PlusCircle } from "lucide-react";
+import Navbar from "@/components/Navbar"; // Navbar-г нэмэх
+import Footer from "@/components/Footer"; // Footer-г нэмэх
 
 const SellerDashboard = () => {
     const router = useRouter();
@@ -16,106 +17,109 @@ const SellerDashboard = () => {
 
     useEffect(() => {
         const fetchSellerProperties = async () => {
+            setIsLoading(true);
             try {
-                // Нэвтэрсэн борлуулагчид зориулсан үл хөдлөх хөрөнгийг татах
                 const response = await fetch('/api/property/seller-list');
                 const data = await response.json();
-
                 if (data.success) {
                     setProperties(data.properties);
                 } else {
-                    console.error("Үл хөдлөх хөрөнгө татахад алдаа гарлаа:", data.message);
+                    toast.error(data.message || "Failed to fetch listings.");
                 }
             } catch (error) {
-                console.error("Үл хөдлөх хөрөнгө татах үед алдаа гарлаа:", error);
+                toast.error("An error occurred while fetching your listings.");
             } finally {
                 setIsLoading(false);
             }
         };
-
         fetchSellerProperties();
-    }, []); // Хоосон хамаарлын массив нь үүнийг холбох үед нэг удаа ажиллахыг баталгаажуулдаг
+    }, []);
 
-    // Төлөвийн хувьд загварчилсан тэмдэг авах туслах функц
     const getStatusBadge = (status) => {
+        const baseClasses = "inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset";
         switch (status) {
-            case 'For Sale':
-                return <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Зарагдана</span>;
-            case 'For Rent':
-                return <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">Түрээслүүлнэ</span>;
-            case 'Sold':
-                return <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Зарагдсан</span>;
-            default:
-                return <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">{status}</span>;
+            case 'Зарагдана': 
+                return <span className={`${baseClasses} bg-zolGreen/10 text-zolGreen ring-zolGreen/20`}>{status}</span>;
+            case 'Түрээслүүлнэ': 
+                return <span className={`${baseClasses} bg-zolGold/10 text-zolGold ring-zolGold/20`}>{status}</span>;
+            case 'Зарагдсан': 
+                return <span className={`${baseClasses} bg-gray-100 text-gray-700 ring-gray-200`}>{status}</span>;
+            default: 
+                return <span className={`${baseClasses} bg-blue-100 text-blue-800 ring-blue-600/20`}>{status}</span>;
         }
+    };
+
+    if (isLoading) {
+        return <Loading />;
     }
 
     return (
         <>
             <Navbar />
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Миний зарууд</h1>
-                    <button 
-                        onClick={() => router.push('/list-property')}
-                        className="bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        + Шинэ үл хөдлөх хөрөнгө бүртгэх
-                    </button>
-                </div>
-
-                {isLoading ? (
-                    <Loading />
-                ) : properties.length === 0 ? (
-                    <div className="text-center py-20 border-2 border-dashed rounded-lg">
-                        <h2 className="text-xl font-semibold text-gray-900">Та одоогоор ямар ч үл хөдлөх хөрөнгө бүртгүүлээгүй байна.</h2>
-                        <p className="mt-2 text-gray-600">Өнөөдөр анхны үл хөдлөх хөрөнгөө бүртгүүлж эхлээрэй.</p>
-                        <button 
+            <div className="bg-zolGreen/5 min-h-screen">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                        <h1 className="font-playfair text-3xl font-bold text-zolGreen">Миний зарууд</h1>
+                        <button
                             onClick={() => router.push('/list-property')}
-                            className="mt-6 bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors"
+                            className="flex items-center gap-2 bg-zolGold text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 shadow-md"
                         >
-                            Үл хөдлөх хөрөнгө бүртгэх
+                            <PlusCircle size={18} /> Шинэ зар нэмэх
                         </button>
                     </div>
-                ) : (
-                    <div className="overflow-x-auto shadow-md rounded-lg">
-                        <table className="min-w-full divide-y divide-gray-200 bg-white">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Үл хөдлөх хөрөнгө</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Үнэ</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Төлөв</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Бүртгэгдсэн огноо</th>
-                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Үйлдэл</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {properties.map((property) => (
-                                    <tr key={property._id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-10 w-10">
-                                                    <Image className="h-10 w-10 rounded-md object-cover" src={property.images[0]} alt={property.title} width={40} height={40} />
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900 truncate max-w-xs">{property.title}</div>
-                                                    <div className="text-sm text-gray-500 truncate max-w-xs">{property.address}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${property.price.toLocaleString()}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getStatusBadge(property.status)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(property.createdAt).toLocaleDateString()}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button className="text-blue-600 hover:text-blue-900 mr-4"><Pencil size={18} /></button>
-                                            <button className="text-red-600 hover:text-red-900"><Trash2 size={18} /></button>
-                                        </td>
+
+                    {properties.length === 0 ? (
+                        <div className="text-center py-20 border-2 border-dashed border-gray-300 rounded-xl bg-white flex flex-col items-center justify-center">
+                            <ListX size={48} className="mx-auto text-zolGold/50 mb-4" strokeWidth={1.5} />
+                            <h2 className="text-2xl font-semibold text-zolDark">Та одоогоор зар оруулаагүй байна</h2>
+                            <p className="mt-2 text-zolDark/70">Өнөөдөр анхны зараа оруулж, борлуулалтаа эхлүүлнэ үү.</p>
+                            <button
+                                onClick={() => router.push('/list-property')}
+                                className="mt-6 flex items-center gap-2 bg-zolGold text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 shadow-md"
+                            >
+                                Зар оруулах
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto shadow-lg rounded-lg border border-gray-200">
+                            <table className="min-w-full divide-y divide-gray-200 bg-white">
+                                <thead className="bg-zolGreen/10">
+                                    <tr>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zolGreen uppercase tracking-wider">Үл хөдлөх хөрөнгө</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zolGreen uppercase tracking-wider">Үнэ</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zolGreen uppercase tracking-wider">Төлөв</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zolGreen uppercase tracking-wider">Огноо</th>
+                                        <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-zolGreen uppercase tracking-wider">Үйлдэл</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {properties.map((property) => (
+                                        <tr key={property._id} className="hover:bg-zolGold/5 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 h-11 w-11">
+                                                        <Image className="h-11 w-11 rounded-md object-cover" src={property.images[0]} alt={property.title} width={44} height={44} />
+                                                    </div>
+                                                    <div className="ml-4">
+                                                        <div className="text-sm font-medium text-zolDark truncate max-w-xs" title={property.title}>{property.title}</div>
+                                                        <div className="text-sm text-zolDark/70 truncate max-w-xs" title={property.address}>{property.address}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-zolGreen font-semibold">₮{property.price.toLocaleString()}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">{getStatusBadge(property.status)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-zolDark/80">{new Date(property.createdAt).toLocaleDateString('mn-MN')}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <button className="text-zolGold hover:opacity-80 mr-4 transition-colors" title="Засах"><Pencil size={18} /></button>
+                                                <button className="text-red-500 hover:text-red-700 transition-colors" title="Устгах"><Trash2 size={18} /></button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
             </div>
             <Footer />
         </>
