@@ -7,6 +7,7 @@ import FeaturedProperties from '@/components/FeaturedProperties'; // The new com
 import Newsletter from '@/components/Newsletter';         // The new, refactored newsletter
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import FinancialNewsSlider from '@/components/FinancialNewsSlider';
 
 const HomePage = () => {
   return (
@@ -29,7 +30,7 @@ const HomePage = () => {
       </main>
       
       {/* 4. Newsletter section to capture leads, often placed before the footer */}
-      <Newsletter />
+      <FinancialNewsSlider />
       
       {/* Footer is at the bottom of the page */}
       <Footer />

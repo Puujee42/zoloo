@@ -2,14 +2,18 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { getPropertyById, getProperties } from '@/lib/data'; 
+import { getPropertyById, getProperties } from '@/lib/data';
 import PropertyDetailsClient from './PropertyDetailsClient';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Home, X } from 'lucide-react'; // Icons for the "Not Found" state
 
-export default async function PropertyPage({ params }) {
-  const { id } = params;
+// ===================================================================
+// THE FIX IS HERE: Destructure `id` directly from `params`
+// ===================================================================
+export default async function PropertyPage({ params: { id } }) {
+  // The line `const { id } = params;` has been removed.
+  // The `id` variable is now directly available from the function arguments.
 
   // Fetch the main property and a list of other properties in parallel for efficiency.
   const [property, allProperties] = await Promise.all([
@@ -36,7 +40,7 @@ export default async function PropertyPage({ params }) {
             <div className="mt-8">
               <Link
                 href="/"
-                className="inline-block bg-amber-500 text-green-900 font-bold py-3 px-8 rounded-lg hover:bg-amber-600 transition-all transform hover:scale-105"
+                className="inline-block bg-yellow-400 text-black font-bold py-3 px-8 rounded-lg hover:bg-yellow-500 transition-all transform hover:scale-105"
               >
                 Нүүр хуудас руу буцах
               </Link>
@@ -59,10 +63,12 @@ export default async function PropertyPage({ params }) {
   // The client component is now wrapped in the page layout.
   return (
     <>
-      <PropertyDetailsClient 
-        property={property} 
-        relatedProperties={relatedProperties} 
-      />
+      <Navbar />
+        <PropertyDetailsClient
+            property={property}
+            relatedProperties={relatedProperties}
+        />
+      <Footer />
     </>
   );
 }

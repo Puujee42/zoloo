@@ -1,12 +1,19 @@
+// /models/Property.js
+
 import mongoose from "mongoose";
 
 const propertySchema = new mongoose.Schema({
-    // --- THIS IS THE FIX ---
-    // The userId is now a String to store the Clerk user ID.
+    // ===================================================================
+    // THE FIX IS HERE
+    // ===================================================================
     userId: { 
-        type: String, 
+        // Tell Mongoose this field will store a MongoDB ObjectId
+        type: mongoose.Schema.Types.ObjectId,
+        // Tell Mongoose that this ObjectId refers to a document in the 'User' collection
+        ref: 'User',
         required: true 
     },
+    // ===================================================================
     
     // Core Property Details
     title: { type: String, required: true, trim: true },
@@ -17,13 +24,12 @@ const propertySchema = new mongoose.Schema({
     // Property Specifications
     bedrooms: { type: Number, required: true, min: 0 },
     bathrooms: { type: Number, required: true, min: 0 },
-    area: { type: Number, required: true, comment: "Area in square feet" },
+    area: { type: Number, required: true, comment: "Area in square meters" },
 
     // Categorization
    status: {
     type: String,
     required: true,
-    // Add the Mongolian values to the list of allowed values
     enum: ['For Sale', 'For Rent', 'Зарагдана', 'Түрээслүүлнэ'], 
     default: 'For Sale',
     },
@@ -34,13 +40,14 @@ const propertySchema = new mongoose.Schema({
     },
     
     // Media
-    images: { type: [String], required: true },
+    images: [{ type: String }],
+    videos: [{ type: String }],
     
     // Additional Features
     features: { type: [String], default: [] },
 
 }, { 
-    timestamps: true // Automatically adds `createdAt` and `updatedAt` fields
+    timestamps: true 
 });
 
 const Property = mongoose.models.Property || mongoose.model('Property', propertySchema);

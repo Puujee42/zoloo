@@ -18,6 +18,7 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
   const {
     _id,
     images,
+    videos,
     price = "Үнэ асууна уу",
     title = "Гарчиггүй үл хөдлөх",
     address = "Хаяг байхгүй",
@@ -27,57 +28,72 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
     status = 'Зарагдаж байна'
   } = property;
 
-  const imageSrc =
-    images?.[0] && typeof images[0] === 'string'
-      ? images[0]
-      : assets.fallback_property_image;
-      
-  // --- URL FOR THE EMBEDDED IFRAME ---
+    // Determine the first media item to display (video or image)
+    const firstMedia = videos?.[0] ? { type: 'video', src: videos[0] } : { type: 'image', src: images?.[0] || assets.fallback_property_image };
+
+  // --- Google Maps Embed URL for the in-card map ---
   const googleMapsEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
 
-  // --- NEW URL FOR THE EXTERNAL LINK ---
-  // This URL opens the standard Google Maps search in a new tab.
+  // --- Google Maps Search URL (opens in a new tab) ---
   const googleMapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
-  const handleCardClick = () => {
-    if (!isMapVisible && _id) {
-      router.push(`/property/${_id}`);
-      window.scrollTo(0, 0);
-    }
-  };
+  // Navigate to property details page on card click (if not in map view)
+  const handleCardClick = (e) => {
+        // Prevent navigation if a button or link inside the card was clicked
+        if (e.target.closest('button') || e.target.tagName === 'A') {
+          return;
+        }
+        if (_id) {
+          router.push(`/property/${_id}`);
+          window.scrollTo(0, 0);
+        }
+    };
 
+  // Toggle between details view and map view
   const toggleView = (e) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent the card's onClick from firing
     setIsMapVisible(prev => !prev);
   };
 
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white rounded-lg shadow-md overflow-hidden group transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl flex flex-col h-full cursor-pointer"
+      className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden group transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl flex flex-col h-full cursor-pointer"
     >
-      {/* Property Image */}
-      <div className="relative overflow-hidden h-56">
-        <Image
-          src={imageSrc}
-          alt={title}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+      {/* Property Media - Images and Videos */}
+        <div className="relative overflow-hidden h-56">
+          {/* Conditionally render video or image */}
+          {firstMedia.type === 'video' ? (
+            <video
+              src={firstMedia.src}
+              alt={title}
+              className="w-full h-full object-cover"
+              controls
+              preload="metadata"
+            >
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+              <Image
+                  src={firstMedia.src}
+                  alt={title}
+                  fill
+                  className="object-cover"
+              />
+          )}
         <span className="absolute top-4 left-4 bg-green-900/70 text-white px-3 py-1 text-xs font-semibold rounded-full backdrop-blur-sm">
           {status}
         </span>
       </div>
-
       {/* Content */}
       <div className="p-5 flex flex-col flex-grow">
         {isMapVisible ? (
-          // --- MAP VIEW (No change here) ---
+          // Map View
           <>
             <h3 className="text-lg font-semibold text-green-900 truncate" title={title}>
               {title}
             </h3>
-            <div className="flex-grow mt-2 rounded-md overflow-hidden border">
+            <div className="flex-grow mt-2 rounded-md overflow-hidden border border-gray-300">
               <iframe
                 src={googleMapsEmbedUrl}
                 width="100%"
@@ -97,7 +113,7 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
             </button>
           </>
         ) : (
-          // --- DETAILS VIEW ---
+          // Details View
           <>
             <p className="text-xl font-bold text-green-900">
               {typeof price === 'number' ? `${price.toLocaleString()}₮` : price}
@@ -106,13 +122,12 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
               {title}
             </h3>
             
-            {/* --- THIS IS THE MODIFIED PART --- */}
-            {/* The address is now a link that opens Google Maps in a new tab. */}
-            <a 
+            {/* Address as a Google Maps Link */}
+            <a
               href={googleMapsSearchUrl}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()} // Prevents the main card click from firing.
+              onClick={(e) => e.stopPropagation()} // Prevent the card click
               className="text-sm text-gray-600 mt-1 flex-grow hover:underline"
               title="Газрын зураг дээр харах"
             >
@@ -125,7 +140,7 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
               <PropertyDetail icon={<LandPlot size={18} />} value={area} label="м²" />
             </div>
 
-            {/* This button still toggles the in-card map */}
+            {/* Map View Toggle Button */}
             <button
               onClick={toggleView}
               className="mt-4 w-full flex items-center justify-center gap-2 text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors"

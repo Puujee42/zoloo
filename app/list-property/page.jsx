@@ -1,33 +1,44 @@
 // /app/list-property/page.jsx
+
 'use client'
 
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
-import { UploadCloud, X } from "lucide-react"; // Icons for the UI
+import { UploadCloud, X } from 'lucide-react';
+import Image from 'next/image';
 
 const ListPropertyPage = () => {
+    const { isSeller, isLoading: isAuthLoading } = useAppContext();
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
 
-    // State for all property text/number data based on your schema
     const [propertyData, setPropertyData] = useState({
         title: '',
         description: '',
         address: '',
-        type: 'House',       // Default value
-        status: 'For Sale',  // Default value
+        type: 'House',
+        status: 'Зарагдана',
         price: '',
         bedrooms: '',
         bathrooms: '',
         area: '',
-        features: '', // Will be a comma-separated string
+        features: '',
     });
     
-    // Separate state for image files
     const [images, setImages] = useState([]);
+    const [videos, setVideos] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!isAuthLoading && !isSeller) {
+            toast.error("Нэвтрэх эрх алга.");
+            router.push('/');
+        }
+    }, [isAuthLoading, isSeller, router]);
+    
+    const priceLabel = propertyData.status === 'Түрээслүүлнэ' ? 'Түрээс (₮ / сар)' : 'Үнэ (₮)';
+    const pricePlaceholder = propertyData.status === 'Түрээслүүлнэ' ? 'жишээ нь, 2,500,000' : 'жишээ нь, 500,000,000';
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -36,152 +47,177 @@ const ListPropertyPage = () => {
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
-        if (images.length + files.length > 10) {
-            toast.error("Та хамгийн ихдээ 10 зураг оруулах боломжтой.");
+        if (images.length + files.length > 8) {
+            toast.error("Та хамгийн ихдээ 8 зураг оруулах боломжтой.");
             return;
         }
         setImages(prev => [...prev, ...files]);
     };
     
-    const handleRemoveImage = (index) => {
-        setImages(prev => prev.filter((_, i) => i !== index));
+    const handleVideoChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (videos.length + files.length > 2) {
+            toast.error("Та хамгийн ихдээ 2 видео оруулах боломжтой.");
+            return;
+        }
+        setVideos(prev => [...prev, ...files]);
+    };
+
+    const handleRemoveImage = (indexToRemove) => {
+        setImages(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
+    const handleRemoveVideo = (indexToRemove) => {
+        setVideos(prev => prev.filter((_, index) => index !== indexToRemove));
     };
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
         if (images.length === 0) {
-            toast.error('Please upload at least one image.');
+            toast.error("Доод тал нь нэг зураг оруулна уу.");
             return;
         }
-        setIsLoading(true);
-
+        setIsSubmitting(true);
         const formData = new FormData();
-        for (const key in propertyData) {
-            formData.append(key, propertyData[key]);
-        }
-        images.forEach(image => {
-            formData.append('images', image);
-        });
+        
+        Object.entries(propertyData).forEach(([key, value]) => formData.append(key, value));
+        images.forEach(imageFile => formData.append('images', imageFile));
+        videos.forEach(videoFile => formData.append('videos', videoFile));
 
         try {
+            // ===================================================================
+            // THE FIX IS HERE
+            // ===================================================================
             const response = await fetch('/api/property', {
                 method: 'POST',
                 body: formData,
+                credentials: 'include', // <-- THIS LINE IS THE FIX
             });
+            // ===================================================================
 
             if (!response.ok) {
-                const textError = await response.text();
-                throw new Error(`Server responded with ${response.status}: ${textError}`);
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Сервер ${response.status} алдаатай хариу өглөө`);
             }
-
             const result = await response.json();
-
             if (result.success) {
                 toast.success('Үл хөдлөх хөрөнгийг амжилттай бүртгэлээ!');
-                router.push('/seller-dashboard'); 
+                router.push(`/property/${result.property._id}`);
             } else {
-                toast.error(result.message || 'An unknown error occurred.');
+                toast.error(result.message || 'Үл хөдлөх хөрөнгө бүртгэхэд алдаа гарлаа.');
             }
         } catch (error) {
-            toast.error(error.message);
-            console.error("Submission failed:", error);
+            toast.error(error.message || 'Гэнэтийн алдаа гарлаа.');
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
-    
-    // Reusable styles for form inputs for a consistent look
-    const inputStyle = "block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring focus:ring-amber-500 focus:ring-opacity-50 text-gray-800";
 
-    return (
-        <>
-            <Navbar />
-            <div className="bg-gray-50 py-12">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <form onSubmit={onSubmitHandler} className="max-w-4xl mx-auto bg-white p-8 sm:p-10 rounded-xl shadow-lg border border-gray-200">
-                        {/* --- Form Header --- */}
-                        <div className="text-center mb-10">
-                            <h1 className="text-3xl md:text-4xl font-bold text-green-900">Үл хөдлөх хөрөнгөө бүртгүүлэх</h1>
-                            <p className="mt-3 text-gray-600">Үл хөдлөх хөрөнгөө зах зээлд гаргахын тулд доорх мэдээллийг бөглөнө үү.</p>
-                        </div>
+    if (isAuthLoading) {
+        return <p className="text-center p-8 font-semibold text-green-900">Борлуулагчийн статусыг шалгаж байна...</p>;
+    }
 
-                        {/* --- Form Fields Grid --- */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                            <div className="md:col-span-2">
-                                <label htmlFor="title" className="sr-only">Гарчиг</label>
-                                <input id="title" name="title" value={propertyData.title} onChange={handleChange} placeholder="Үл хөдлөх хөрөнгийн гарчиг" className={inputStyle} required />
-                            </div>
-                            <div className="md:col-span-2">
-                                <label htmlFor="address" className="sr-only">Хаяг</label>
-                                <input id="address" name="address" value={propertyData.address} onChange={handleChange} placeholder="Үл хөдлөх хөрөнгийн хаяг" className={inputStyle} required />
-                            </div>
-                            <div className="md:col-span-2">
-                                <label htmlFor="description" className="sr-only">Тодорхойлолт</label>
-                                <textarea id="description" name="description" value={propertyData.description} onChange={handleChange} placeholder="Үл хөдлөх хөрөнгийн тодорхойлолт" className={inputStyle} rows={4} required />
-                            </div>
-                            <input name="price" type="number" value={propertyData.price} onChange={handleChange} placeholder="Үнэ (₮)" className={inputStyle} required />
-                            <input name="area" type="number" value={propertyData.area} onChange={handleChange} placeholder="Талбай (м.кв)" className={inputStyle} required />
-                            <input name="bedrooms" type="number" value={propertyData.bedrooms} onChange={handleChange} placeholder="Унтлагын өрөө" className={inputStyle} required />
-                            <input name="bathrooms" type="number" value={propertyData.bathrooms} onChange={handleChange} placeholder="Угаалгын өрөө" className={inputStyle} required />
-                            <select name="type" value={propertyData.type} onChange={handleChange} className={inputStyle} required>
-                                <option>Байшин</option>
-                                <option>Орон сууц</option>
-                                <option>Кондо</option>
-                                <option>Вилла</option>
-                                <option>Газар</option>
-                                <option>Таунхаус</option>
-                            </select>
-                            <select name="status" value={propertyData.status} onChange={handleChange} className={inputStyle} required>
-                                <option>Зарагдана</option>
-                                <option>Түрээслүүлнэ</option>
-                            </select>
-                            <div className="md:col-span-2">
-                                <input name="features" value={propertyData.features} onChange={handleChange} placeholder="Онцлог (таслалаар тусгаарлана, жишээ нь, Усан сан, Гараж)" className={inputStyle} />
-                            </div>
-                            
-                            {/* --- Image Uploader --- */}
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-green-900 mb-2">Үл хөдлөх хөрөнгийн зураг</label>
-                                <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-300 px-6 py-10">
-                                    <div className="text-center">
-                                        <UploadCloud className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
-                                        <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                                            <label htmlFor="file-upload" className="relative cursor-pointer rounded-md bg-white font-semibold text-amber-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-amber-600 focus-within:ring-offset-2 hover:text-amber-500">
-                                                <span>Файл оруулах</span>
-                                                <input id="file-upload" name="file-upload" type="file" className="sr-only" multiple onChange={handleImageChange} accept="image/*" />
-                                            </label>
-                                            <p className="pl-1">эсвэл чирч тавина уу</p>
-                                        </div>
-                                        <p className="text-xs leading-5 text-gray-500">PNG, JPG, GIF 10MB хүртэл</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* --- Image Previews --- */}
-                            {images.length > 0 && (
-                                <div className="md:col-span-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                                    {images.map((file, index) => (
-                                        <div key={index} className="relative group">
-                                            <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className="h-28 w-28 rounded-md object-cover border-2 border-gray-200" />
-                                            <button type="button" onClick={() => handleRemoveImage(index)} className="absolute -top-2 -right-2 h-6 w-6 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
-                                                <X size={16} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* --- Submit Button --- */}
-                        <button type="submit" disabled={isLoading} className="mt-12 w-full bg-amber-500 text-green-900 font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 hover:bg-amber-600 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100">
-                            {isLoading ? 'Илгээж байна...' : 'Миний үл хөдлөх хөрөнгийг бүртгэх'}
-                        </button>
-                    </form>
-                </div>
+    return isSeller ? (
+        <form onSubmit={onSubmitHandler} className="max-w-4xl mx-auto p-4 sm:p-6">
+            <div className="space-y-4 mb-10">
+                <h1 className="text-3xl font-bold text-green-900">Үл хөдлөх хөрөнгөө бүртгүүлэх</h1>
+                <p className="text-gray-600">Үл хөдлөх хөрөнгөө зах зээлд гаргахын тулд доорх мэдээллийг бөглөнө үү.</p>
             </div>
-            <Footer />
-        </>
-    );
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                {/* Text and Select Inputs */}
+                <input name="title" value={propertyData.title} onChange={handleChange} placeholder="Гарчиг (жишээ нь, Хан-Уул дүүрэгт 3 өрөө байр)" className="input-style md:col-span-2" required />
+                <input name="address" value={propertyData.address} onChange={handleChange} placeholder="Байршлын дэлгэрэнгүй хаяг" className="input-style md:col-span-2" required />
+                <textarea name="description" value={propertyData.description} onChange={handleChange} placeholder="Үл хөдлөх хөрөнгийн дэлгэрэнгүй тайлбар" className="input-style md:col-span-2" rows={5} required />
+                
+                <div>
+                    <label className="input-label">Зарын төлөв</label>
+                    <select name="status" value={propertyData.status} onChange={handleChange} className="input-style" required>
+                        <option>Зарагдана</option>
+                        <option>Түрээслүүлнэ</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="input-label">{priceLabel}</label>
+                    <input name="price" type="number" value={propertyData.price} onChange={handleChange} placeholder={pricePlaceholder} className="input-style" required />
+                </div>
+                
+                <input name="area" type="number" value={propertyData.area} onChange={handleChange} placeholder="Талбай (м²)" className="input-style" required />
+                <select name="type" value={propertyData.type} onChange={handleChange} className="input-style" required>
+                    <option value="" disabled>Төрөл сонгоно уу</option>
+                    <option>House</option><option>Apartment</option><option>Condo</option><option>Villa</option><option>Land</option><option>Townhouse</option>
+                </select>
+                
+                {propertyData.type !== 'Land' && (
+                    <>
+                        <input name="bedrooms" type="number" value={propertyData.bedrooms} onChange={handleChange} placeholder="Унтлагын өрөөний тоо" className="input-style" required={propertyData.type !== 'Land'} />
+                        <input name="bathrooms" type="number" value={propertyData.bathrooms} onChange={handleChange} placeholder="Угаалгын өрөөний тоо" className="input-style" required={propertyData.type !== 'Land'} />
+                    </>
+                )}
+                
+                <input name="features" value={propertyData.features} onChange={handleChange} placeholder="Онцлог шинж чанарууд (таслалаар тусгаарлана уу)" className="input-style md:col-span-2" />
+
+                {/* Image Upload Section */}
+                <div className="md:col-span-2">
+                    <label className="input-label mb-2">Зураг (8 хүртэл)</label>
+                    <div className="upload-box">
+                        <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
+                        <label htmlFor="image-upload" className="upload-label">
+                            <span>Зураг сонгох</span>
+                            <input id="image-upload" type="file" className="sr-only" multiple onChange={handleImageChange} accept="image/*" />
+                        </label>
+                        <p className="text-xs text-gray-500">PNG, JPG 10MB-аас бага</p>
+                    </div>
+                </div>
+                {images.length > 0 && (
+                    <div className="md:col-span-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+                        {images.map((file, index) => (
+                            <div key={index} className="relative group">
+                                <Image src={URL.createObjectURL(file)} alt={`preview ${index}`} width={112} height={112} className="h-28 w-28 rounded-md object-cover border-2" />
+                                <button type="button" onClick={() => handleRemoveImage(index)} className="remove-button"><X size={16} /></button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                
+                {/* Video Upload Section */}
+                <div className="md:col-span-2">
+                    <label className="input-label mb-2">Видео (2 хүртэл)</label>
+                    <div className="upload-box">
+                        <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
+                        <label htmlFor="video-upload" className="upload-label">
+                            <span>Видео сонгох</span>
+                            <input id="video-upload" type="file" className="sr-only" multiple onChange={handleVideoChange} accept="video/*" />
+                        </label>
+                        <p className="text-xs text-gray-500">MP4, MOV 50MB-аас бага</p>
+                    </div>
+                </div>
+                {videos.length > 0 && (
+                    <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        {videos.map((file, index) => (
+                            <div key={index} className="relative group">
+                                <video src={URL.createObjectURL(file)} className="h-32 w-full rounded-md object-cover border-2" controls />
+                                <button type="button" onClick={() => handleRemoveVideo(index)} className="remove-button"><X size={16} /></button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <button type="submit" disabled={isSubmitting} className="submit-button">
+                {isSubmitting ? "Илгээж байна..." : "Миний үл хөдлөх хөрөнгийг бүртгэх"}
+            </button>
+            
+            <style jsx>{`
+                .input-label { @apply block text-sm font-medium text-green-900; }
+                .input-style { @apply block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-500 sm:text-sm sm:leading-6 transition; }
+                .upload-box { @apply mt-2 flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 px-6 py-10; }
+                .upload-label { @apply relative cursor-pointer rounded-md bg-white font-semibold text-yellow-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-yellow-600 focus-within:ring-offset-2 hover:text-yellow-500; }
+                .remove-button { @apply absolute -top-2 -right-2 h-6 w-6 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md; }
+                .submit-button { @apply mt-10 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 px-8 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:scale-105; }
+            `}</style>
+        </form>
+    ) : null;
 };
 
 export default ListPropertyPage;

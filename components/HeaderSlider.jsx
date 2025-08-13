@@ -1,12 +1,13 @@
-// components/HeaderSlider.jsx
+// /components/HeaderSlider.jsx
 
 'use client' // This component uses hooks, so it must be a client component.
 
-import {React,useState,useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext"; // Import the AppContext
 import { useRouter } from "next/navigation"; // Import the Next.js router
 import { BedDouble, Bath, LandPlot, MoveRight } from "lucide-react"; // Import icons
+import { assets } from '@/assets/assets'; // Import your assets
 
 const HeaderSlider = () => {
   // --- 1. Get properties and loading state from the global context ---
@@ -69,13 +70,25 @@ const HeaderSlider = () => {
         {sliderProperties.map((property) => (
           <div key={property._id} className="relative min-w-full h-full text-white">
             {/* Background Image */}
-            <Image
-              src={property.images[0]}
-              alt={property.title}
-              fill
-              className="z-0 object-cover"
-              priority={true} // Prioritize loading the first image
-            />
+            {/* --- FIX:  Conditionally render the Image if the image array is not null or empty--- */}
+            {property?.images && property.images.length > 0 ? (
+               <Image
+                   src={property.images[0]}
+                   alt={property.title}
+                   fill
+                   className="z-0 object-cover"
+                   priority={true} // Prioritize loading the first image
+               />
+            ) : (
+               <Image // Fallback image if no image is available
+                   src={assets.fallback_property_image} // Replace with your fallback path
+                   alt={property.title}
+                   fill
+                   className="z-0 object-cover"
+                   priority={true}
+               />
+            )}
+
             {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent z-10"></div>
 
