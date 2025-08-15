@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/config/db";
 import Property from "@/models/Property";
-import { auth } from "@clerk/nextjs/server";
+import { auth, getAuth } from "@clerk/nextjs/server";
 
 export async function POST(req) {
   try {
     await connectDB();
 
-    const { userId } = auth();
-
+    const { userId } = getAuth(req);
+    console.log(userId)
     if (!userId) {
       return NextResponse.json(
         { success: false, error: "Unauthorized. Please log in." },
