@@ -16,7 +16,7 @@ export async function POST(req) {
     const requiredFields = [
       "userId", "title", "description", "price",
       "address", "bedrooms", "bathrooms", "area",
-      "status", "type"
+      "status", "type","number"
     ];
     for (const field of requiredFields) {
       if (!body[field]) {
@@ -40,8 +40,8 @@ export async function POST(req) {
       status: body.status,
       type: body.type,
       images: body.images || [],
-      videos: body.videos || [],
-      features: body.features || []
+      features: body.features || [],
+      number: body.number
     });
 
     // Save to DB

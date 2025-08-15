@@ -1,12 +1,11 @@
 // /app/property/[id]/PropertyDetailsClient.jsx
 'use client'
 import React, { useState } from 'react';
-import { BedDouble, Bath, LandPlot, MapPin, X, Calendar, Clock } from 'lucide-react';
+import { BedDouble, Bath, LandPlot, MapPin, X, Calendar, Clock, Phone } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
 import PropertyMediaGallery from '@/components/PropertyMediaGallery';
 import PropertyCard from '@/components/PropertyCard'; // Import PropertyCard
-import Navbar from '@/components/Navbar'; // Import Navbar
 import Footer from '@/components/Footer'; // Import Footer
 
 // --- Appointment Modal Component-г брэндийн загвартай болгосон ---
@@ -125,23 +124,18 @@ export default function PropertyDetailsClient({ property, relatedProperties }) {
                     </div>
                   </div>
                 )}
+                 {property.number && (
+                    <div className="flex items-center bg-green-100 p-3 rounded-lg my-2">
+                      <Phone className="mr-2 text-green-700" />
+                      <span className="text-green-800 font-semibold">
+                        Contact Number: {property.number}
+                      </span>
+                    </div>
+                  )}
               </div>
               
               {/* --- 3. Агентын картыг шинэчилсэн --- */}
-              <div className="p-6 border border-gray-200 rounded-xl bg-white shadow-lg">
-                  <h3 className="font-semibold text-zolDark mb-4 text-xl">Бүртгэсэн агент</h3>
-                  <div className="flex items-center space-x-4">
-                      <img src={property.userId?.image || '/default-agent.png'} alt={property.userId?.name || 'Агент'} className="h-16 w-16 rounded-full object-cover border-2 border-zolGold" />
-                      <div>
-                          <div className="font-bold text-lg text-zolGreen">{property.userId?.name || 'Манай агент'}</div>
-                          <div className="text-sm text-zolDark/70">ZOL Pro Realty</div>
-                      </div>
-                  </div>
-                  <div className="mt-6 space-y-3">
-                      <button onClick={handleScheduleTour} className="w-full bg-zolGold hover:bg-opacity-90 text-white font-bold py-3 rounded-lg shadow-md transition-all transform hover:scale-105">Танилцах цаг товлох</button>
-                      <button className="w-full bg-zolGreen hover:bg-opacity-90 text-white font-bold py-3 rounded-lg transition-all">Агенттай холбогдох</button>
-                  </div>
-              </div>
+              
             </div>
           </div>
           

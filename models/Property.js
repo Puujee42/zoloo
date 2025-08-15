@@ -11,6 +11,8 @@ const PropertySchema = new mongoose.Schema({
   bedrooms: Number,
   bathrooms: Number,
   area: Number,
+  number: Number,
+   images: { type: [String], required: true },
   features: [String],
   createdAt: { type: Date, default: Date.now },
 });

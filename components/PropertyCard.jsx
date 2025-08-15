@@ -18,7 +18,6 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
   const {
     _id,
     images,
-    videos,
     price = "Үнэ асууна уу",
     title = "Гарчиггүй үл хөдлөх",
     address = "Хаяг байхгүй",
@@ -29,7 +28,7 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
   } = property;
 
     // Determine the first media item to display (video or image)
-    const firstMedia = videos?.[0] ? { type: 'video', src: videos[0] } : { type: 'image', src: images?.[0] || assets.fallback_property_image };
+    const firstMedia = { type: 'image', src: images?.[0] || assets.fallback_property_image };
 
   // --- Google Maps Embed URL for the in-card map ---
   const googleMapsEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
@@ -63,24 +62,14 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
       {/* Property Media - Images and Videos */}
         <div className="relative overflow-hidden h-56">
           {/* Conditionally render video or image */}
-          {firstMedia.type === 'video' ? (
-            <video
-              src={firstMedia.src}
-              alt={title}
-              className="w-full h-full object-cover"
-              controls
-              preload="metadata"
-            >
-              Your browser does not support the video tag.
-            </video>
-          ) : (
+         (
               <Image
                   src={firstMedia.src}
                   alt={title}
                   fill
                   className="object-cover"
               />
-          )}
+          )
         <span className="absolute top-4 left-4 bg-green-900/70 text-white px-3 py-1 text-xs font-semibold rounded-full backdrop-blur-sm">
           {status}
         </span>

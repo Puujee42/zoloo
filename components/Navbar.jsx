@@ -68,8 +68,8 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="flex items-center justify-between px-6 md:px-16 lg:px-20 h-24 border-b border-gray-200 bg-white text-zolDark sticky top-0 z-40">
-        {/* --- 2. ЛОГО ШИНЭЧЛЭГДЛЭЭ: Зураг болон текст хамтдаа --- */}
+      <nav className="font-poppins flex items-center justify-between px-6 md:px-16 lg:px-20 h-24 border-b border-gray-200 bg-white text-zolDark sticky top-0 z-40">
+      {/* --- 2. ЛОГО ШИНЭЧЛЭГДЛЭЭ: Зураг болон текст хамтдаа --- */}
         <Link href="/" className="flex items-center gap-3">
              <Image
             className="cursor-pointer w-36 md:w-44"
@@ -79,7 +79,11 @@ const Navbar = () => {
             height={55}
             priority
           />
-        </Link>
+          <span className="font-poppins font-extrabold flex items-center justify-between px-6 md:px-16 lg:px-20 h-24 border-b border-gray-200 bg-white text-zolDark sticky top-0 z-40">
+  Zol Luxury Real Estate
+</span>
+
+          </Link>
 
         {/* --- Desktop Navigation --- */}
         <div className="hidden lg:flex items-center gap-10 text-base">

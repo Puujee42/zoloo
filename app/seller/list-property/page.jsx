@@ -24,10 +24,10 @@ const ListPropertyPage = () => {
         bathrooms: '',
         area: '',
         features: '',
+        number: '', images:''
     });
     
     const [images, setImages] = useState([]);
-    const [videos, setVideos] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -71,7 +71,6 @@ const ListPropertyPage = () => {
         
         Object.entries(propertyData).forEach(([key, value]) => formData.append(key, value));
         images.forEach(imageFile => formData.append('images', imageFile));
-        videos.forEach(videoFile => formData.append('videos', videoFile));
 
         try {
             const response = await fetch('/api/property', {
@@ -121,6 +120,7 @@ const ListPropertyPage = () => {
                     {/* Basic Info */}
                     <div className="md:col-span-2"><label className={inputLabel}>Гарчиг</label><input name="title" value={propertyData.title} onChange={handleChange} placeholder="Жишээ нь: Хан-Уулд 3 өрөө байр" className={inputStyle} required /></div>
                     <div className="md:col-span-2"><label className={inputLabel}>Дэлгэрэнгүй хаяг</label><input name="address" value={propertyData.address} onChange={handleChange} placeholder="Байршил, хороо, гудамж..." className={inputStyle} required /></div>
+                    <div className="md:col-span-2"><label className={inputLabel}>дугаар</label><textarea name="number" value={propertyData.number} onChange={handleChange} placeholder="99918122" className={inputStyle} rows={5} required /></div>
                     <div className="md:col-span-2"><label className={inputLabel}>Тайлбар</label><textarea name="description" value={propertyData.description} onChange={handleChange} placeholder="Онцлог, давуу тал, орчин..." className={inputStyle} rows={5} required /></div>
                     
                     {/* Details */}
@@ -142,10 +142,7 @@ const ListPropertyPage = () => {
                     <div className="md:col-span-2"><label className={inputLabel}>Зураг (8 хүртэл)</label><div className={uploadBox}><UploadCloud className="mx-auto h-12 w-12 text-gray-400" /><label htmlFor="image-upload" className={uploadLabel}><span>Зураг сонгох</span><input id="image-upload" type="file" className="sr-only" multiple onChange={(e) => handleFileChange(e, setImages, 'зураг', 8)} accept="image/*" /></label><p className="text-xs text-gray-500">PNG, JPG (10MB-аас бага)</p></div></div>
                     {images.length > 0 && <div className="md:col-span-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">{images.map((file, index) => (<div key={index} className="relative group"><Image src={URL.createObjectURL(file)} alt={`preview ${index}`} width={112} height={112} className="h-28 w-28 rounded-md object-cover border-2" /><button type="button" onClick={() => handleRemoveFile(index, setImages)} className={removeButton}><X size={16} /></button></div>))}</div>}
                     
-                    {/* Video Upload */}
-                    <div className="md:col-span-2"><label className={inputLabel}>Видео (2 хүртэл)</label><div className={uploadBox}><UploadCloud className="mx-auto h-12 w-12 text-gray-400" /><label htmlFor="video-upload" className={uploadLabel}><span>Видео сонгох</span><input id="video-upload" type="file" className="sr-only" multiple onChange={(e) => handleFileChange(e, setVideos, 'видео', 2)} accept="video/*" /></label><p className="text-xs text-gray-500">MP4, MOV (50MB-аас бага)</p></div></div>
-                    {videos.length > 0 && <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">{videos.map((file, index) => (<div key={index} className="relative group"><video src={URL.createObjectURL(file)} className="h-32 w-full rounded-md object-cover border-2" controls /><button type="button" onClick={() => handleRemoveFile(index, setVideos)} className={removeButton}><X size={16} /></button></div>))}</div>}
-                </div>
+                     </div>
 
                 <button type="submit" disabled={isSubmitting} className={submitButton}>
                     {isSubmitting ? "Илгээж байна..." : "Зар оруулах"}

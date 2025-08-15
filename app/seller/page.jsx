@@ -80,7 +80,7 @@ const SellerDashboardPage = () => {
                                 onClick={() => router.push(`/property/${listing._id}`)}
                             >
                                 <Image
-                                    src={listing.images[0] || '/default-property.jpg'}
+                                    src={listing.images?.[0] || '/default-property.jpg'}
                                     alt={listing.title}
                                     width={300}
                                     height={180}
