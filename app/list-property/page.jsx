@@ -25,9 +25,6 @@ const ListPropertyPage = () => {
         area: '',
         features: '',
     });
-    
-    const [images, setImages] = useState([]);
-    const [videos, setVideos] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
