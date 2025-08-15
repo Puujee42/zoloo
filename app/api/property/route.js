@@ -7,10 +7,8 @@ export async function POST(req) {
   try {
     await connectDB();
 
-    // --- FIX: Use Clerk's auth() helper to get the userId ---
     const { userId } = auth();
 
-    // Security Check: Ensure the user is logged in
     if (!userId) {
       return NextResponse.json(
         { success: false, error: "Unauthorized. Please log in." },
@@ -18,45 +16,31 @@ export async function POST(req) {
       );
     }
 
-    // The rest of your code for handling FormData is correct
     const formData = await req.formData();
 
     const propertyData = {
-      // --- FIX: Add the userId from Clerk to the data ---
       userId,
-      title: formData.get('title'),
-      description: formData.get('description'),
-      address: formData.get('address'),
-      type: formData.get('type'),
-      status: formData.get('status'),
-      price: formData.get('price'),
-      bedrooms: formData.get('bedrooms'),
-      bathrooms: formData.get('bathrooms'),
-      area: formData.get('area'),
-      features: formData.get('features').split(',').map(feature => feature.trim()).filter(Boolean),
+      title: formData.get("title"),
+      description: formData.get("description"),
+      address: formData.get("address"),
+      type: formData.get("type"),
+      status: formData.get("status"),
+      price: Number(formData.get("price")),
+      bedrooms: Number(formData.get("bedrooms")),
+      bathrooms: Number(formData.get("bathrooms")),
+      area: Number(formData.get("area")),
+      features: formData
+        .get("features")
+        ?.split(",")
+        .map((f) => f.trim())
+        .filter(Boolean),
     };
-
-    const images = formData.getAll('images').filter((image) => image.name !== '');
-    const videos = formData.getAll('videos').filter((video) => video.name !== '');
-
-    console.log('User ID:', userId);
-    console.log('Received property data:', propertyData);
-
-    // TODO: Add logic to upload images and videos to a cloud service (Cloudinary, S3, etc.)
-    // and store the URLs in your propertyData object.
 
     const newProperty = await Property.create(propertyData);
 
-    return NextResponse.json({
-      success: true,
-      property: newProperty
-    }, { status: 201 });
-
+    return NextResponse.json({ success: true, property: newProperty }, { status: 201 });
   } catch (error) {
-    console.error("Error adding property:", error);
-    return NextResponse.json({
-      success: false,
-      error: error.message || "Something went wrong."
-    }, { status: 500 });
+    console.error(error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
