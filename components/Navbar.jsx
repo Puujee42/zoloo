@@ -79,10 +79,7 @@ const Navbar = () => {
             height={55}
             priority
           />
-          <span className="font-poppins font-extrabold flex items-center justify-between px-6 md:px-16 lg:px-20 h-24 border-b border-gray-200 bg-white text-zolDark sticky top-0 z-40">
-  Zol Luxury Real Estate
-</span>
-
+        
           </Link>
 
         {/* --- Desktop Navigation --- */}
