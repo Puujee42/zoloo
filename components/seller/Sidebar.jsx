@@ -26,11 +26,6 @@ const SideBar = () => {
             path: '/seller/list-property',
             icon: <PlusCircle size={20} />
         },
-        {
-            name: 'Санал хүсэлт', // Нэрийг илүү ойлгомжтой болгосон
-            path: '/seller/inquiries',
-            icon: <MessageSquare size={20} />
-        },
     ];
 
     return (
