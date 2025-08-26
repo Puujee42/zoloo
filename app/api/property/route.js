@@ -4,7 +4,7 @@ import Property from "@/models/Property";
 import { getAuth } from "@clerk/nextjs/server";
 import cloudinary from "@/lib/cloudinary";
 
-// This helper function is already perfect. No changes needed here.
+// Энэ туслах функц нь төгс ажиллаж байгаа тул өөрчлөлт хийх шаардлагагүй.
 async function uploadFileToCloudinary(file, folder) {
   const fileBuffer = await file.arrayBuffer();
   const mimeType = file.type;
@@ -33,49 +33,38 @@ export async function POST(req) {
 
     const formData = await req.formData();
 
-    // Get images and filter out any empty file inputs (this part is correct)
     const images = formData
       .getAll('images')
       .filter((image) => image instanceof File && image.size > 0);
 
-    // MODIFICATION 1: Get all video files instead of just one.
-    // Ensure the key 'videos' matches the key used in your frontend's FormData.
     const videos = formData
       .getAll('videos')
       .filter((video) => video instanceof File && video.size > 0);
 
     if (images.length === 0) {
-      return NextResponse.json({ success: false, error: "At least one image is required." }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Доод тал нь нэг зураг оруулах шаардлагатай." }, { status: 400 });
     }
 
-    // Prepare to upload all files (images and videos) concurrently.
     const uploadPromises = [];
-
-    // Add image upload promises to the array
     images.forEach(image => {
       uploadPromises.push(uploadFileToCloudinary(image, 'property_images'));
     });
-
-    // MODIFICATION 2: Loop through the videos array and create an upload promise for each one.
     videos.forEach(video => {
       uploadPromises.push(uploadFileToCloudinary(video, 'property_videos'));
     });
 
-    // Await all uploads to complete
     const uploadResults = await Promise.all(uploadPromises);
 
-    // Separate the URLs based on the resource type returned from Cloudinary.
     const imageUrls = uploadResults
       .filter(result => result.resource_type === 'image')
       .map(result => result.secure_url);
 
-    // MODIFICATION 3: Filter for ALL video results and map them to their URLs.
     const videoUrls = uploadResults
       .filter(result => result.resource_type === 'video')
       .map(result => result.secure_url);
 
 
-    // Assemble the final property data for the database
+    // Мэдээллийн санд хадгалах үл хөдлөх хөрөнгийн эцсийн өгөгдлийг бэлтгэх
     const propertyData = {
       userId,
       title: formData.get("title"),
@@ -84,16 +73,39 @@ export async function POST(req) {
       type: formData.get("type"),
       status: formData.get("status"),
       price: Number(formData.get("price")),
-      bedrooms: Number(formData.get("bedrooms")),
-      bathrooms: Number(formData.get("bathrooms")),
       area: Number(formData.get("area")),
       number: Number(formData.get("number")),
       features: formData.get("features")?.split(",").map((f) => f.trim()).filter(Boolean) || [],
       images: imageUrls,
-      // MODIFICATION 4: Save the array of video URLs.
-      // The field name is now 'videos' (plural).
       videos: videoUrls,
+      duureg: formData.get("duureg"),
+      khoroo: formData.get("khoroo"),
+      davhar: Number(formData.get("davhar")),
+      roomCount: Number(formData.get("roomCount")),
+      oirhonTogloomiinTalbai: formData.get("oirhonTogloomiinTalbai") === 'true',
+      surguuli: formData.get("surguuli") === 'true',
+
+      // MODIFICATION: Шинээр нэмэгдсэн төлбөрийн нөхцөлийн талбарууд
+      zeel: formData.get("zeel") === 'true',
+      barter: formData.get("barter") === 'true',
+      lizing: formData.get("lizing") === 'true',
     };
+
+    // Шаардлагатай талбарууд бөглөгдсөн эсэхийг шалгах
+    const requiredFields = ["title", "duureg", "khoroo", "price", "area"];
+    for (const field of requiredFields) {
+      // Use `formData.get()` to check directly as propertyData might have 0 or empty strings
+      if (!formData.get(field)) {
+          return NextResponse.json({ success: false, error: `${field} талбарыг заавал бөглөнө үү.` }, { status: 400 });
+      }
+    }
+
+    // Check for building-specific fields only if it's a house or apartment
+    if (propertyData.type === 'Apartment' || propertyData.type === 'House') {
+        if (!formData.get('davhar') || !formData.get('roomCount')) {
+            return NextResponse.json({ success: false, error: `Давхар болон өрөөний тоог заавал бөглөнө үү.` }, { status: 400 });
+        }
+    }
 
     const newProperty = await Property.create(propertyData);
 
@@ -101,6 +113,9 @@ export async function POST(req) {
 
   } catch (error) {
     console.error("Error in POST /api/property:", error);
-    return NextResponse.json({ success: false, error: "Something went wrong on the server." }, { status: 500 });
+    if (error.name === 'ValidationError') {
+        return NextResponse.json({ success: false, error: "Validation failed", details: error.errors }, { status: 400 });
+    }
+    return NextResponse.json({ success: false, error: "Сервер дээр алдаа гарлаа." }, { status: 500 });
   }
 }

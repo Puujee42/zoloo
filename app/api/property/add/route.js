@@ -12,7 +12,6 @@ cloudinary.config({
 });
 
 // --- Helper function to upload files ---
-// This helper function is already perfect for handling both images and videos. No changes needed here.
 async function uploadFileToCloudinary(file, folder) {
   const fileBuffer = await file.arrayBuffer();
   const mimeType = file.type;
@@ -20,7 +19,6 @@ async function uploadFileToCloudinary(file, folder) {
   const fileUri = `data:${mimeType};base64,${base64Data}`;
   const resource_type = mimeType.startsWith('video/') ? 'video' : 'image';
 
-  // For videos, specify a larger chunk size for better performance with larger files
   const options = {
     resource_type,
     folder,
@@ -43,43 +41,51 @@ export async function POST(req) {
     const formData = await req.formData();
     const body = Object.fromEntries(formData.entries());
 
-    const requiredFields = ["title", "description", "price", "address", "area", "status", "type", "number"];
+    const requiredFields = [
+      "title",
+      "description",
+      "price",
+      "address",
+      "area",
+      "status",
+      "type",
+      "number",
+      "duureg",
+      "khoroo",
+      "davhar",
+      "roomCount"
+    ];
+
     for (const field of requiredFields) {
-      if (!body[field]) {
-        return NextResponse.json({ error: `${field} is required.` }, { status: 400 });
+      // 'davhar' and 'roomCount' can be 0, so we check if the field is undefined or null
+      if (body[field] === undefined || body[field] === null || body[field] === '') {
+        return NextResponse.json({ error: `${field} талбарыг заавал бөглөнө үү.` }, { status: 400 });
       }
     }
 
-    // --- Get all images and videos from formData ---
     const images = formData.getAll("images").filter(img => img.size > 0);
-    // MODIFICATION: Use getAll("videos") to capture multiple video files
     const videos = formData.getAll("videos").filter(vid => vid.size > 0);
 
     if (images.length === 0) {
-      return NextResponse.json({ error: "At least one image is required." }, { status: 400 });
+      return NextResponse.json({ error: "Доод тал нь нэг зураг оруулах шаардлагатай." }, { status: 400 });
     }
 
-    // --- Create upload promises for all files ---
     const imageUploadPromises = images.map(image => uploadFileToCloudinary(image, "property_images"));
-    // MODIFICATION: Create an array of upload promises for videos
     const videoUploadPromises = videos.map(video => uploadFileToCloudinary(video, "property_videos"));
 
-    // Combine all promises to run them concurrently
     const allUploadPromises = [...imageUploadPromises, ...videoUploadPromises];
     const uploadResults = await Promise.all(allUploadPromises);
 
-    // --- Filter results to get separate image and video URLs ---
     const imageUrls = uploadResults
       .filter(r => r.resource_type === 'image')
       .map(r => r.secure_url);
 
-    // MODIFICATION: Filter for all video results and collect their URLs
     const videoUrls = uploadResults
       .filter(r => r.resource_type === 'video')
       .map(r => r.secure_url);
 
-    // --- Create and Save Property ---
-    const property = new Property({
+    // --- Property-ийн өгөгдлийг бэлтгэх ---
+    const propertyData = {
       userId: userId,
       title: body.title,
       description: body.description,
@@ -91,15 +97,25 @@ export async function POST(req) {
       number: body.number,
       features: body.features ? body.features.split(',').map(f => f.trim()) : [],
       images: imageUrls,
-      RoomCount:body.RoomCount,
-      // MODIFICATION: Save the array of video URLs
       videos: videoUrls,
-    });
+      duureg: body.duureg,
+      khoroo: body.khoroo,
+      davhar: body.davhar,
+      roomCount: body.roomCount,
+      oirhonTogloomiinTalbai: body.oirhonTogloomiinTalbai === 'true',
+      surguuli: body.surguuli === 'true',
 
+      // MODIFICATION: Шинээр нэмэгдсэн төлбөрийн нөхцөлийн талбарууд
+      zeel: body.zeel === 'true',
+      barter: body.barter === 'true',
+      lizing: body.lizing === 'true',
+    };
+
+    const property = new Property(propertyData);
     await property.save();
 
     return NextResponse.json(
-      { message: "Property added successfully", property },
+      { success: true, message: "Үл хөдлөх хөрөнгийг амжилттай нэмлээ", property },
       { status: 201 }
     );
 
@@ -107,8 +123,8 @@ export async function POST(req) {
     console.error("--- Internal Server Error ---");
     console.error("Error adding property:", error);
     if (error.name === 'ValidationError') {
-      return NextResponse.json({ error: "Validation failed", details: error.errors }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Validation failed", details: error.errors }, { status: 400 });
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
   }
 }

@@ -4,8 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
-import { UploadCloud, X } from 'lucide-react';
+import { UploadCloud, X, CheckSquare, Square } from 'lucide-react';
 import Image from 'next/image';
+
+// Улаанбаатарын дүүргүүдийн жагсаалт
+const ulaanbaatarDistricts = [
+    "Багануур", "Багахангай", "Баянгол", "Баянзүрх",
+    "Чингэлтэй", "Хан-Уул", "Налайх", "Сонгинохайрхан", "Сүхбаатар"
+];
 
 const ListPropertyPage = () => {
     const { isSeller, isLoading: isAuthLoading } = useAppContext();
@@ -15,20 +21,26 @@ const ListPropertyPage = () => {
         title: '',
         description: '',
         address: '',
-        type: 'House',
+        type: 'Apartment',
         status: 'Зарагдана',
         price: '',
-        bedrooms: '',
-        bathrooms: '',
         area: '',
-        features: '',
         number: '',
-        images: '',
-        videos: '', // Added for videos
+        features: '',
+        duureg: 'Баянзүрх',
+        khoroo: '',
+        davhar: '',
+        roomCount: '',
+        oirhonTogloomiinTalbai: false,
+        surguuli: false,
+        // --- Шинээр нэмэгдсэн төлбөрийн нөхцөл ---
+        zeel: false,
+        barter: false,
+        lizing: false,
     });
 
     const [images, setImages] = useState([]);
-    const [videos, setVideos] = useState([]); // New state for videos
+    const [videos, setVideos] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -42,8 +54,11 @@ const ListPropertyPage = () => {
     const pricePlaceholder = propertyData.status === 'Түрээслүүлнэ' ? '2,500,000' : '500,000,000';
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setPropertyData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setPropertyData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const handleFileChange = (e, setFiles, fileType, maxFiles) => {
@@ -72,7 +87,7 @@ const ListPropertyPage = () => {
 
         Object.entries(propertyData).forEach(([key, value]) => formData.append(key, value));
         images.forEach(imageFile => formData.append('images', imageFile));
-        videos.forEach(videoFile => formData.append('videos', videoFile)); // Append video files
+        videos.forEach(videoFile => formData.append('videos', videoFile));
 
         try {
             const response = await fetch('/api/property', {
@@ -80,16 +95,17 @@ const ListPropertyPage = () => {
                 body: formData,
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Сервер ${response.status} алдаатай хариу өглөө`);
-            }
             const result = await response.json();
+
+            if (!response.ok) {
+                 throw new Error(result.error || `Сервер ${response.status} алдаатай хариу өглөө`);
+            }
+
             if (result.success) {
                 toast.success('Үл хөдлөх хөрөнгийг амжилттай бүртгэлээ!');
                 router.push(`/property/${result.property._id}`);
             } else {
-                throw new Error(result.message || 'Үл хөдлөх хөрөнгө бүртгэхэд алдаа гарлаа.');
+                throw new Error(result.error || 'Үл хөдлөх хөрөнгө бүртгэхэд алдаа гарлаа.');
             }
         } catch (error) {
             toast.error(error.message || 'Гэнэтийн алдаа гарлаа.');
@@ -105,10 +121,13 @@ const ListPropertyPage = () => {
     const uploadLabel = "relative cursor-pointer rounded-md font-semibold text-zolGreen focus-within:outline-none focus-within:ring-2 focus-within:ring-zolGold focus-within:ring-offset-2 hover:text-zolGold";
     const removeButton = "absolute -top-2 -right-2 h-6 w-6 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-700";
     const submitButton = "mt-10 w-full bg-zolGold text-white font-semibold py-3 px-8 rounded-lg transition-all transform hover:scale-[1.02] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none";
+    const checkboxLabel = "flex items-center gap-2 text-sm text-zolDark cursor-pointer";
 
     if (isAuthLoading) {
         return <div className="flex items-center justify-center min-h-screen"><p className="text-center p-8 font-semibold text-zolGreen">Борлуулагчийн статусыг шалгаж байна...</p></div>;
     }
+
+    const showBuildingDetails = propertyData.type === 'Apartment' || propertyData.type === 'House';
 
     return isSeller ? (
         <div className="bg-zolGreen/5 min-h-screen py-10">
@@ -121,31 +140,69 @@ const ListPropertyPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     {/* Basic Info */}
                     <div className="md:col-span-2"><label className={inputLabel}>Гарчиг</label><input name="title" value={propertyData.title} onChange={handleChange} placeholder="Жишээ нь: Хан-Уулд 3 өрөө байр" className={inputStyle} required /></div>
-                    <div className="md:col-span-2"><label className={inputLabel}>Дэлгэрэнгүй хаяг</label><input name="address" value={propertyData.address} onChange={handleChange} placeholder="Байршил, хороо, гудамж..." className={inputStyle} required /></div>
-                    <div className="md:col-span-2"><label className={inputLabel}>дугаар</label><textarea name="number" value={propertyData.number} onChange={handleChange} placeholder="99918122" className={inputStyle} rows={5} required /></div>
-                    <div className="md:col-span-2"><label className={inputLabel}>Тайлбар</label><textarea name="description" value={propertyData.description} onChange={handleChange} placeholder="Онцлог, давуу тал, орчин..." className={inputStyle} rows={5} required /></div>
+                    <div className="md:col-span-2"><label className={inputLabel}>Дэлгэрэнгүй хаяг</label><input name="address" value={propertyData.address} onChange={handleChange} placeholder="Хороолол, байр, гудамжны нэр..." className={inputStyle} required /></div>
+                    <div className="md:col-span-2"><label className={inputLabel}>Утасны дугаар</label><input name="number" type="tel" value={propertyData.number} onChange={handleChange} placeholder="99118822" className={inputStyle} required /></div>
+                    <div className="md:col-span-2"><label className={inputLabel}>Тайлбар</label><textarea name="description" value={propertyData.description} onChange={handleChange} placeholder="Онцлог, давуу тал, орчин..." className={`${inputStyle} h-auto`} rows={4} required /></div>
 
                     {/* Details */}
                     <div><label className={inputLabel}>Төлөв</label><select name="status" value={propertyData.status} onChange={handleChange} className={inputStyle} required><option>Зарагдана</option><option>Түрээслүүлнэ</option></select></div>
                     <div><label className={inputLabel}>{priceLabel}</label><input name="price" type="number" value={propertyData.price} onChange={handleChange} placeholder={pricePlaceholder} className={inputStyle} required /></div>
                     <div><label className={inputLabel}>Талбай (м²)</label><input name="area" type="number" value={propertyData.area} onChange={handleChange} placeholder="120" className={inputStyle} required /></div>
-                    <div><label className={inputLabel}>Төрөл</label><select name="type" value={propertyData.type} onChange={handleChange} className={inputStyle} required><option>House</option><option>Apartment</option><option>Land</option><option>Car</option><option>Barter</option></select></div>
+                    <div><label className={inputLabel}>Төрөл</label><select name="type" value={propertyData.type} onChange={handleChange} className={inputStyle} required><option>Apartment</option><option>House</option><option>Land</option><option>Car</option><option>Barter</option></select></div>
 
-                    {propertyData.type !== 'Land' && propertyData.type !== 'Car' && (
+                    <div><label className={inputLabel}>Дүүрэг</label><select name="duureg" value={propertyData.duureg} onChange={handleChange} className={inputStyle} required>{ulaanbaatarDistricts.map(d => <option key={d} value={d}>{d}</option>)}</select></div>
+                    <div><label className={inputLabel}>Хороо</label><input name="khoroo" type="text" value={propertyData.khoroo} onChange={handleChange} placeholder="Жишээ нь: 1-р хороо" className={inputStyle} required /></div>
+
+                    {showBuildingDetails && (
                         <>
+                            <div><label className={inputLabel}>Давхар</label><input name="davhar" type="number" value={propertyData.davhar} onChange={handleChange} placeholder="9" className={inputStyle} required /></div>
+                            <div><label className={inputLabel}>Өрөөний тоо</label><input name="roomCount" type="number" value={propertyData.roomCount} onChange={handleChange} placeholder="3" className={inputStyle} required /></div>
                         </>
                     )}
 
-                    <div className="md:col-span-2"><label className={inputLabel}>Нэмэлт онцлог</label><input name="features" value={propertyData.features} onChange={handleChange} placeholder="Жишээ нь: Гаражтай, Тагттай, Харуул хамгаалалттай" className={inputStyle} /></div>
+                    {/* --- Байршлын онцлог --- */}
+                    <div className="md:col-span-2 border-t pt-6 mt-4 flex items-center flex-wrap gap-x-8 gap-y-4">
+                         <label className={checkboxLabel}>
+                             <input type="checkbox" name="surguuli" checked={propertyData.surguuli} onChange={handleChange} className="hidden" />
+                             {propertyData.surguuli ? <CheckSquare className="text-zolGold" /> : <Square className="text-gray-400" />}
+                             <span>Ойрхон сургуультай</span>
+                         </label>
+                         <label className={checkboxLabel}>
+                             <input type="checkbox" name="oirhonTogloomiinTalbai" checked={propertyData.oirhonTogloomiinTalbai} onChange={handleChange} className="hidden" />
+                             {propertyData.oirhonTogloomiinTalbai ? <CheckSquare className="text-zolGold" /> : <Square className="text-gray-400" />}
+                             <span>Ойрхон тоглоомын талбайтай</span>
+                         </label>
+                    </div>
 
-                    {/* Image Upload */}
+                    {/* --- MODIFICATION: Төлбөрийн нөхцөл --- */}
+                    <div className="md:col-span-2 border-t pt-6">
+                        <h3 className="text-base font-semibold text-zolDark mb-4">Төлбөрийн нөхцөл</h3>
+                        <div className="flex items-center flex-wrap gap-x-8 gap-y-4">
+                            <label className={checkboxLabel}>
+                                <input type="checkbox" name="zeel" checked={propertyData.zeel} onChange={handleChange} className="hidden" />
+                                {propertyData.zeel ? <CheckSquare className="text-zolGold" /> : <Square className="text-gray-400" />}
+                                <span>Зээлээр авах боломжтой</span>
+                            </label>
+                            <label className={checkboxLabel}>
+                                <input type="checkbox" name="barter" checked={propertyData.barter} onChange={handleChange} className="hidden" />
+                                {propertyData.barter ? <CheckSquare className="text-zolGold" /> : <Square className="text-gray-400" />}
+                                <span>Бартер хийх боломжтой</span>
+                            </label>
+                            <label className={checkboxLabel}>
+                                <input type="checkbox" name="lizing" checked={propertyData.lizing} onChange={handleChange} className="hidden" />
+                                {propertyData.lizing ? <CheckSquare className="text-zolGold" /> : <Square className="text-gray-400" />}
+                                <span>Лизингээр авах боломжтой</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="md:col-span-2 pt-6 border-t"><label className={inputLabel}>Нэмэлт онцлог (таслалаар тусгаарлана)</label><input name="features" value={propertyData.features} onChange={handleChange} placeholder="Жишээ нь: Гаражтай, Тагттай, Харуул хамгаалалттай" className={inputStyle} /></div>
+
+                    {/* Image & Video Uploads */}
                     <div className="md:col-span-2"><label className={inputLabel}>Зураг (8 хүртэл)</label><div className={uploadBox}><UploadCloud className="mx-auto h-12 w-12 text-gray-400" /><label htmlFor="image-upload" className={uploadLabel}><span>Зураг сонгох</span><input id="image-upload" type="file" className="sr-only" multiple onChange={(e) => handleFileChange(e, setImages, 'зураг', 8)} accept="image/*" /></label><p className="text-xs text-gray-500">PNG, JPG (10MB-аас бага)</p></div></div>
                     {images.length > 0 && <div className="md:col-span-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">{images.map((file, index) => (<div key={index} className="relative group"><Image src={URL.createObjectURL(file)} alt={`preview ${index}`} width={112} height={112} className="h-28 w-28 rounded-md object-cover border-2" /><button type="button" onClick={() => handleRemoveFile(index, setImages)} className={removeButton}><X size={16} /></button></div>))}</div>}
-
-                    {/* Video Upload */}
                     <div className="md:col-span-2"><label className={inputLabel}>Видео (2 хүртэл)</label><div className={uploadBox}><UploadCloud className="mx-auto h-12 w-12 text-gray-400" /><label htmlFor="video-upload" className={uploadLabel}><span>Видео сонгох</span><input id="video-upload" type="file" className="sr-only" multiple onChange={(e) => handleFileChange(e, setVideos, 'видео', 2)} accept="video/*" /></label><p className="text-xs text-gray-500">MP4, MOV (100MB-аас бага)</p></div></div>
                     {videos.length > 0 && <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">{videos.map((file, index) => (<div key={index} className="relative group"><video src={URL.createObjectURL(file)} width="112" height="112" className="h-28 w-28 rounded-md object-cover border-2" autoPlay loop muted playsInline /> <button type="button" onClick={() => handleRemoveFile(index, setVideos)} className={removeButton}><X size={16} /></button></div>))}</div>}
-
                 </div>
 
                 <button type="submit" disabled={isSubmitting} className={submitButton}>
