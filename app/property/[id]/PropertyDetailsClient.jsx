@@ -1,17 +1,16 @@
 'use client'
 
 import React, { useState } from 'react';
-// MODIFICATION: Import ListChecks icon
-import { BedDouble, LandPlot, MapPin, X, Calendar, Clock, Phone, Trash2, Building, School, PlayCircle, Banknote, Repeat, FileText, ListChecks } from 'lucide-react';
+// --- MODIFICATION: Imported Pencil icon for the edit button ---
+import { Pencil, BedDouble, LandPlot, MapPin, X, Calendar, Clock, Phone, Trash2, Building, School, PlayCircle, Banknote, Repeat, FileText, ListChecks } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
 import PropertyMediaGallery from '@/components/PropertyMediaGallery';
 import PropertyCard from '@/components/PropertyCard';
 
-// Appointment Modal (Энэ хэсэгт өөрчлөлт ороогүй)
+// Appointment Modal (This component remains unchanged)
 const AppointmentModal = ({ property, onClose }) => {
-  // ... (no changes in this component)
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,16 +53,9 @@ export default function PropertyDetailsClient({ property, relatedProperties }) {
   const formatPrice = (price) =>
     typeof price === 'number' ? `${price.toLocaleString()}₮` : "Үнэ тохиролцоно";
     
-  // MODIFICATION: New function to translate property type
   const getPropertyTypeInMongolian = (type) => {
-    const typeMap = {
-      'Apartment': 'Орон сууц',
-      'House': 'Зуслангийн байшин',
-      'Car': 'Автомашин',
-      'Barter': 'Бартер',
-      'Land': 'Газар'
-    };
-    return typeMap[type] || type; // If not found, return original type
+    const typeMap = { 'Apartment': 'Орон сууц', 'House': 'Хаус', 'Car': 'Автомашин', 'Barter': 'Бартер', 'Land': 'Газар' };
+    return typeMap[type] || type;
   }
 
   const isOwner = user && user.id === property.userId;
@@ -78,92 +70,37 @@ export default function PropertyDetailsClient({ property, relatedProperties }) {
             <PropertyMediaGallery images={property.images} videos={property.videos} title={property.title} />
 
             <div className="lg:col-span-1 space-y-8">
-              <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow">
-                <h1 className="font-playfair text-3xl font-bold text-zolGreen">
-                  {property.title}
-                </h1>
-                <div className="mt-2 flex items-center gap-2 text-zolDark/70">
-                  <MapPin size={16} />
-                  <p>{`${property.duureg}, ${property.khoroo}, ${property.address}`}</p>
-                </div>
+              <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                <h1 className="font-playfair text-3xl font-bold text-zolGreen">{property.title}</h1>
+                <div className="mt-2 flex items-center gap-2 text-zolDark/70"><MapPin size={16} /><p>{`${property.duureg}, ${property.khoroo}, ${property.address}`}</p></div>
+                <p className="font-playfair text-4xl font-bold text-zolGold mt-6 font-safir">{formatPrice(property.price)}</p>
 
-                <p className="font-playfair text-4xl font-bold text-zolGold mt-6 font-safir">
-                  {formatPrice(property.price)}
-                </p>
-
-                {/* MODIFICATION: Added property type to the specs grid */}
                 <div className="grid grid-cols-3 gap-6 text-center border-t border-b mt-6 py-6">
-                  <div className="flex flex-col items-center gap-1">
-                    <ListChecks className="text-zolGreen" />
-                    <span className="text-sm font-medium">{getPropertyTypeInMongolian(property.type)}</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <LandPlot className="text-zolGreen" />
-                    <span className="text-sm font-medium font-safir">{property.area?.toLocaleString() || 0} м²</span>
-                  </div>
-                  {showBuildingDetails && property.roomCount > 0 && (
-                    <div className="flex flex-col items-center gap-1">
-                      <BedDouble className="text-zolGreen" />
-                      <span className="text-sm font-medium"><span className="font-safir">{property.roomCount}</span> өрөө</span>
-                    </div>
-                  )}
-                  {showBuildingDetails && typeof property.davhar === 'number' && (
-                    <div className="flex flex-col items-center gap-1">
-                      <Building className="text-zolGreen" />
-                      <span className="text-sm font-medium"><span className="font-safir">{property.davhar}</span>-р давхар</span>
-                    </div>
-                  )}
+                  <div className="flex flex-col items-center gap-1"><ListChecks className="text-zolGreen" /><span className="text-sm font-medium">{getPropertyTypeInMongolian(property.type)}</span></div>
+                  <div className="flex flex-col items-center gap-1"><LandPlot className="text-zolGreen" /><span className="text-sm font-medium font-safir">{property.area?.toLocaleString() || 0} м²</span></div>
+                  {showBuildingDetails && property.roomCount > 0 && (<div className="flex flex-col items-center gap-1"><BedDouble className="text-zolGreen" /><span className="text-sm font-medium"><span className="font-safir">{property.roomCount}</span> өрөө</span></div>)}
+                  {showBuildingDetails && typeof property.davhar === 'number' && (<div className="flex flex-col items-center gap-1"><Building className="text-zolGreen" /><span className="text-sm font-medium"><span className="font-safir">{property.davhar}</span>-р давхар</span></div>)}
                 </div>
 
-                <div className="mt-6">
-                  <h3 className="font-semibold text-lg text-zolDark mb-2">Тодорхойлолт</h3>
-                  <p className="text-zolDark/90 leading-relaxed whitespace-pre-line">
-                    {property.description}
-                  </p>
-                </div>
+                <div className="mt-6"><h3 className="font-semibold text-lg text-zolDark mb-2">Тодорхойлолт</h3><p className="text-zolDark/90 leading-relaxed whitespace-pre-line">{property.description}</p></div>
                 
-                {(property.surguuli || property.oirhonTogloomiinTalbai) && (
-                    <div className="border-t pt-6 mt-6">
-                        <h3 className="font-semibold text-lg text-zolDark mb-4">Орчны мэдээлэл</h3>
-                        <div className="space-y-3">
-                            {property.surguuli && ( <div className="flex items-center gap-3"><School className="text-zolGreen" size={20} /><span className="text-zolDark/90">Сургууль ойрхон</span></div> )}
-                            {property.oirhonTogloomiinTalbai && ( <div className="flex items-center gap-3"><PlayCircle className="text-zolGreen" size={20} /><span className="text-zolDark/90">Тоглоомын талбай ойрхон</span></div> )}
-                        </div>
-                    </div>
-                )}
+                {(property.surguuli || property.oirhonTogloomiinTalbai) && (<div className="border-t pt-6 mt-6"><h3 className="font-semibold text-lg text-zolDark mb-4">Орчны мэдээлэл</h3><div className="space-y-3">{property.surguuli && ( <div className="flex items-center gap-3"><School className="text-zolGreen" size={20} /><span className="text-zolDark/90">Сургууль ойрхон</span></div> )}{property.oirhonTogloomiinTalbai && ( <div className="flex items-center gap-3"><PlayCircle className="text-zolGreen" size={20} /><span className="text-zolDark/90">Тоглоомын талбай ойрхон</span></div> )}</div></div>)}
+                {(property.zeel || property.barter || property.lizing) && (<div className="border-t pt-6 mt-6"><h3 className="font-semibold text-lg text-zolDark mb-4">Төлбөрийн нөхцөл</h3><div className="space-y-3">{property.zeel && ( <div className="flex items-center gap-3"><Banknote className="text-zolGreen" size={20} /><span className="text-zolDark/90">Банкны зээлээр авах боломжтой</span></div> )}{property.barter && ( <div className="flex items-center gap-3"><Repeat className="text-zolGreen" size={20} /><span className="text-zolDark/90">Бартер хийх боломжтой</span></div> )}{property.lizing && ( <div className="flex items-center gap-3"><FileText className="text-zolGreen" size={20} /><span className="text-zolDark/90">Лизингээр авах боломжтой</span></div> )}</div></div>)}
+                {property.features?.length > 0 && (<div className="border-t pt-6 mt-6"><h3 className="font-semibold text-lg text-zolDark mb-4">Онцлог шинж чанарууд</h3><div className="flex flex-wrap gap-3">{property.features.map((feature) => (<span key={feature} className="bg-zolGreen/10 text-zolGreen text-sm font-medium px-4 py-2 rounded-full">{feature}</span>))}</div></div>)}
+                {property.number && (<div className="flex items-center bg-green-50 p-4 rounded-lg my-6 border border-green-100 shadow-sm"><Phone className="mr-2 text-green-700" /><span className="text-green-800 font-semibold">Холбогдох дугаар: <span className="font-safir tracking-wider ml-1">{property.number}</span></span></div>)}
 
-                {(property.zeel || property.barter || property.lizing) && (
-                    <div className="border-t pt-6 mt-6">
-                        <h3 className="font-semibold text-lg text-zolDark mb-4">Төлбөрийн нөхцөл</h3>
-                        <div className="space-y-3">
-                            {property.zeel && ( <div className="flex items-center gap-3"><Banknote className="text-zolGreen" size={20} /><span className="text-zolDark/90">Банкны зээлээр авах боломжтой</span></div> )}
-                            {property.barter && ( <div className="flex items-center gap-3"><Repeat className="text-zolGreen" size={20} /><span className="text-zolDark/90">Бартер хийх боломжтой</span></div> )}
-                            {property.lizing && ( <div className="flex items-center gap-3"><FileText className="text-zolGreen" size={20} /><span className="text-zolDark/90">Лизингээр авах боломжтой</span></div> )}
-                        </div>
-                    </div>
-                )}
-
-                {property.features?.length > 0 && (
-                  <div className="border-t pt-6 mt-6">
-                    <h3 className="font-semibold text-lg text-zolDark mb-4">Онцлог шинж чанарууд</h3>
-                    <div className="flex flex-wrap gap-3">
-                      {property.features.map((feature) => (
-                        <span key={feature} className="bg-zolGreen/10 text-zolGreen text-sm font-medium px-4 py-2 rounded-full">{feature}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {property.number && (
-                  <div className="flex items-center bg-green-50 p-4 rounded-lg my-6 border border-green-100 shadow-sm">
-                    <Phone className="mr-2 text-green-700" />
-                    <span className="text-green-800 font-semibold">Холбогдох дугаар: <span className="font-safir tracking-wider ml-1">{property.number}</span></span>
-                  </div>
-                )}
-
+                {/* --- MODIFICATION: Owner action buttons are now grouped together --- */}
                 {isOwner && (
-                  <div className="mt-6 border-t pt-6">
-                    <button onClick={handleDelete} disabled={isDeleting} className="w-full flex items-center justify-center gap-2 bg-red-600 text-white font-semibold py-3 rounded-lg shadow-md transition-transform hover:scale-105 hover:bg-red-700 disabled:bg-red-400">
+                  <div className="mt-6 border-t pt-6 flex flex-col sm:flex-row gap-4">
+                    <button 
+                      onClick={() => router.push(`/seller/edit-property/${property._id}`)}
+                      className="w-full flex items-center justify-center gap-2 bg-zolGold text-white font-semibold py-3 rounded-lg shadow-md transition-transform hover:scale-105 hover:bg-opacity-90">
+                      <Pencil size={18} /> Зар засах
+                    </button>
+                    <button 
+                      onClick={handleDelete} 
+                      disabled={isDeleting} 
+                      className="w-full flex items-center justify-center gap-2 bg-red-600 text-white font-semibold py-3 rounded-lg shadow-md transition-transform hover:scale-105 hover:bg-red-700 disabled:bg-red-400">
                       <Trash2 size={18} />{isDeleting ? 'Устгаж байна...' : 'Зар устгах'}
                     </button>
                   </div>
@@ -176,9 +113,7 @@ export default function PropertyDetailsClient({ property, relatedProperties }) {
             <div className="mt-24 border-t pt-16">
               <h2 className="font-playfair text-3xl font-bold text-zolGreen mb-12 text-center">Танд таалагдаж болох бусад зарууд</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {relatedProperties.map((prop) => (
-                  <PropertyCard key={prop._id} property={prop} />
-                ))}
+                {relatedProperties.map((prop) => (<PropertyCard key={prop._id} property={prop} />))}
               </div>
             </div>
           )}
