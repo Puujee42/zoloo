@@ -8,7 +8,15 @@ const PropertySchema = new mongoose.Schema({
   duureg: { type: String, required: true }, // Улаанбаатар хотын дүүрэг
   khoroo: { type: String, required: true }, // Хороо
   davhar: { type: Number, required: true }, // Давхар
-  type: String,
+  
+  // --- ЭНЭ ХЭСЭГТ ӨӨРЧЛӨЛТ ОРОВ ---
+  type: { 
+    type: String, 
+    required: true,
+    // Зөвхөн эдгээр утгыг зөвшөөрнө
+    enum: ['Apartment', 'House', 'Car', 'Barter', 'Land'] 
+  },
+  
   status: String,
   price: Number,
   area: Number,
@@ -18,14 +26,14 @@ const PropertySchema = new mongoose.Schema({
   features: [String],
 
   // Нэмэлт талбарууд
-  oirhonTogloomiinTalbai: { type: Boolean, default: false }, // Ойрхон тоглоомын талбай (тийм/үгүй)
-  surguuli: { type: Boolean, default: false }, // Ойрхон сургууль (тийм/үгүй)
-  roomCount: { type: Number, default: 0 }, // Өрөөний тоо
+  oirhonTogloomiinTalbai: { type: Boolean, default: false },
+  surguuli: { type: Boolean, default: false },
+  roomCount: { type: Number, default: 0 },
 
-  // --- Шинээр нэмэгдсэн төлбөрийн нөхцөлийн талбарууд ---
-  zeel: { type: Boolean, default: false }, // Зээлээр авах боломжтой (тийм/үгүй)
-  barter: { type: Boolean, default: false }, // Бартер хийх боломжтой (тийм/үгүй)
-  lizing: { type: Boolean, default: false }, // Лизингээр авах боломжтой (тийм/үгүй)
+  // Төлбөрийн нөхцөлийн талбарууд
+  zeel: { type: Boolean, default: false },
+  barter: { type: Boolean, default: false },
+  lizing: { type: Boolean, default: false },
 
   createdAt: { type: Date, default: Date.now }
 });

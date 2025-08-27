@@ -207,8 +207,50 @@ const Navbar = () => {
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Mobile drawer-ийн доторх код өөрчлөгдөөгүй тул энд орхив */}
-              {/* Таны өмнөх код энэ хэсэгт зөв ажиллана */}
+              <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+                <h2 className="font-semibold text-lg text-zolDark">Түргэн цэс</h2>
+                <button onClick={() => setIsDotMenuOpen(false)} className="p-2" aria-label="Close menu">
+                  <X size={24} className="text-gray-600" />
+                </button>
+              </div>
+              <div className="flex-grow mt-6 flex flex-col gap-4 text-base overflow-y-auto">
+                {user ? (
+                  <div className="flex flex-col gap-4">
+                    {isSeller && (
+                      <button onClick={() => { router.push("/seller"); setIsDotMenuOpen(false); }} className="w-full flex items-center justify-center gap-2 text-base border-2 border-zolGreen text-zolGreen px-5 py-3 rounded-full font-medium hover:bg-zolGreen hover:text-white transition-colors">
+                        <LayoutDashboard size={18} /> Худалдагчийн самбар
+                      </button>
+                    )}
+                    <p className="text-center text-gray-500">Сайн байна уу, {user.firstName || "хэрэглэгч"} 👋</p>
+                    <div className="flex justify-center"><UserButton afterSignOutUrl="/" /></div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    <button onClick={() => { openSignIn(); setIsDotMenuOpen(false); }} className="w-full text-base font-medium text-zolDark py-3 hover:text-zolGold transition-colors">Нэвтрэх</button>
+                    <button onClick={() => { openSignIn({ signInOptions: { afterSignInUrl: "/list-property" } }); setIsDotMenuOpen(false); }} className="w-full flex items-center justify-center gap-2 text-base bg-zolGold text-white font-medium px-5 py-3 rounded-full hover:bg-opacity-90 transition-colors">
+                      <PlusCircle size={20} /> Зар оруулах
+                    </button>
+                  </div>
+                )}
+                <div className="h-px bg-gray-200 my-4"></div>
+                <div className="flex flex-col gap-2">
+                  <Link href="/" onClick={() => setIsDotMenuOpen(false)} className="px-4 py-3 rounded-md hover:bg-gray-100">Нүүр</Link>
+                  <div className="mt-2 w-full bg-white border border-gray-100 rounded-lg shadow-sm py-2">
+                    <Link href="/all-properties" onClick={() => setIsDotMenuOpen(false)} className="block px-4 py-2.5 text-sm font-bold text-zolGreen hover:bg-zolGold/10 hover:text-zolGold">Бүх үл хөдлөх</Link>
+                    <div className="h-px bg-gray-200 my-1"></div>
+                    {propertyTypes.map((type) => (
+                      <Link key={type.name} href={type.path} onClick={() => setIsDotMenuOpen(false)} className="block px-4 py-2.5 text-sm text-zolDark hover:bg-zolGold/10 hover:text-zolGold">{type.name}</Link>
+                    ))}
+                  </div>
+                  <Link href="/about" onClick={() => setIsDotMenuOpen(false)} className="px-4 py-3 rounded-md hover:bg-gray-100">Бидний тухай</Link>
+                  <Link href="/contact" onClick={() => setIsDotMenuOpen(false)} className="px-4 py-3 rounded-md hover:bg-gray-100">Холбоо барих</Link>
+                </div>
+                <motion.div className="relative bg-zolGold/10 border border-zolGold/30 mt-auto rounded-xl p-6 text-center" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
+                  <h3 className="text-xl font-bold text-black">🚀 Бид ажилд авч байна!</h3>
+                  <p className="mt-2 text-black/70">ZOL-д нэгдэж, үл хөдлөх хөрөнгийн ирээдүйг хамтдаа бүтээцгээе.</p>
+                  <motion.a href="/careers" className="inline-block mt-4 bg-zolGold text-white font-semibold px-6 py-3 rounded-lg hover:bg-opacity-90" whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 300 }}>Нээлттэй ажлын байр харах</motion.a>
+                </motion.div>
+              </div>
             </motion.div>
           </motion.div>
         )}

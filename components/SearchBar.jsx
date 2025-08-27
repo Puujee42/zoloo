@@ -6,14 +6,13 @@ import { useRouter } from 'next/navigation';
 import { Search, X, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// MODIFICATION: Component now accepts isOpen and onClose props
 const SearchBar = ({ isOpen, onClose }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    const searchRef = useRef(null); // Ref for the search bar container
+    const searchRef = useRef(null); // SearchBar-ийн container-д зориулсан ref
 
-    // MODIFICATION: Handle outside click to close the search bar
+    // Гадуур товших үед хаах логик
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -36,15 +35,18 @@ const SearchBar = ({ isOpen, onClose }) => {
         if (!searchTerm.trim()) return;
 
         setIsLoading(true);
-        // Navigate to the search results page
-        router.push(`/search-results?q=${encodeURIComponent(searchTerm)}`);
         
-        // Close the search bar after navigation
+        // --- ЭНЭ ХЭСЭГТ ӨӨРЧЛӨЛТ ОРОВ ---
+        // Тусдаа хуудас руу үсрэхийн оронд, одоогийн URL-г шинэчилнэ.
+        // Энэ нь /all-properties хуудсыг дахин render хийж, шинэ `q` параметрийг ашиглахыг өдөөнө.
+        router.push(`/all-properties?q=${encodeURIComponent(searchTerm)}`);
+        
+        // Хайлтын цонхыг хааж, утгыг цэвэрлэнэ
         setTimeout(() => {
             onClose();
             setIsLoading(false);
             setSearchTerm('');
-        }, 300); // Give a small delay for navigation to start
+        }, 300); // Шилжилт эхлэхэд бага зэрэг хугацаа өгөх
     };
 
     return (
@@ -57,7 +59,6 @@ const SearchBar = ({ isOpen, onClose }) => {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
                 >
-                    {/* The ref is attached to the main container */}
                     <motion.div
                         ref={searchRef}
                         className="relative w-full max-w-2xl"
@@ -88,7 +89,6 @@ const SearchBar = ({ isOpen, onClose }) => {
                             </button>
                         </form>
                         
-                        {/* The close button is now part of the search bar, but doesn't need to be inside the form */}
                         <button
                           onClick={onClose}
                           className="absolute -top-4 -right-4 h-10 w-10 bg-white rounded-full flex items-center justify-center text-gray-600 hover:text-black hover:rotate-90 transition-transform shadow-lg border"
