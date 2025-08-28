@@ -1,11 +1,11 @@
 // /app/api/appointments/route.js
 
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/config/db';
+import  connectDB  from '@/config/db';
 import Appointment from '@/models/Appointment';
 import Property from '@/models/Property';
 import { getAuth } from '@clerk/nextjs/server';
-import { clerkClient } from '@clerk/nextjs'; // Import the Clerk server client
+import { clerkClient } from '@clerk/nextjs/server'; // Import the Clerk server client
 import { Resend } from 'resend'; // Import Resend
 import { SellerAppointmentRequestEmail } from '@/app/emails/SellerAppointmentRequest';
 import { BuyerAppointmentConfirmationEmail } from '@/app/emails/BuyerAppointmentConfirmation';
