@@ -5,7 +5,7 @@ import connectDB from "@/config/db";
 import Property from "@/models/Property";
 import { getAuth } from "@clerk/nextjs/server";
 import cloudinary from "@/lib/cloudinary";
-import { streamToBuffer } from '@/utils/streamToBuffer'; // A helper you might need
+import { streamToBuffer } from "@/utils/streamToBuffer";
 
 /**
  * Helper function to extract the public_id from a Cloudinary URL.
@@ -17,164 +17,197 @@ function getPublicIdFromUrl(url) {
 }
 
 // --- GET /api/property/:id ---
-// (This function remains unchanged)
 export async function GET(req, { params }) {
   try {
     await connectDB();
     const { id } = params;
-    const property = await Property.findById(id);
+
+    // lean() = faster JSON docs, select = avoid unused fields
+    const property = await Property.findById(id).select("-__v").lean();
+
     if (!property) {
-      return NextResponse.json({ success: false, error: "Property not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Property not found" },
+        { status: 404 }
+      );
     }
+
     return NextResponse.json({ success: true, property }, { status: 200 });
   } catch (error) {
     console.error("Error in GET /api/property/[id]:", error);
-    return NextResponse.json({ success: false, error: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Server error" },
+      { status: 500 }
+    );
   }
 }
 
-// --- NEW: PUT /api/property/:id ---
-// Updates an existing property.
+// --- PUT /api/property/:id ---
 export async function PUT(req, { params }) {
   try {
     await connectDB();
     const { id } = params;
     const { userId } = getAuth(req);
 
-    // 1. Authorization Check
     if (!userId) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    const property = await Property.findById(id);
-
+    const property = await Property.findById(id).select("userId");
     if (!property) {
-      return NextResponse.json({ success: false, error: "Property not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Property not found" },
+        { status: 404 }
+      );
     }
 
-    // Ensure the user updating the property is the owner
     if (property.userId.toString() !== userId) {
-      return NextResponse.json({ success: false, error: "Forbidden: You do not own this property" }, { status: 403 });
+      return NextResponse.json(
+        { success: false, error: "Forbidden: You do not own this property" },
+        { status: 403 }
+      );
     }
 
-    // 2. Process FormData
+    // --- Process FormData ---
     const formData = await req.formData();
     const data = Object.fromEntries(formData.entries());
 
-    // 3. Handle File Uploads (for new files)
-    const newImages = formData.getAll('images').filter(file => file.size > 0);
-    const newVideos = formData.getAll('videos').filter(file => file.size > 0);
-    
-    const newImageUrls = [];
-    const newVideoUrls = [];
+    // Files
+    const newImages = formData.getAll("images").filter(f => f.size > 0);
+    const newVideos = formData.getAll("videos").filter(f => f.size > 0);
 
-    // Upload new images
-    for (const image of newImages) {
-      const buffer = await streamToBuffer(image.stream());
-      const result = await cloudinary.uploader.upload(
-        `data:${image.type};base64,${buffer.toString('base64')}`,
+    // Upload in parallel
+    const uploadImages = newImages.map(async (img) => {
+      const buffer = await streamToBuffer(img.stream());
+      return cloudinary.uploader.upload(
+        `data:${img.type};base64,${buffer.toString("base64")}`,
         { resource_type: "image", folder: "zol-property" }
       );
-      newImageUrls.push(result.secure_url);
-    }
+    });
 
-    // Upload new videos
-    for (const video of newVideos) {
-      const buffer = await streamToBuffer(video.stream());
-      const result = await cloudinary.uploader.upload(
-        `data:${video.type};base64,${buffer.toString('base64')}`,
+    const uploadVideos = newVideos.map(async (vid) => {
+      const buffer = await streamToBuffer(vid.stream());
+      return cloudinary.uploader.upload(
+        `data:${vid.type};base64,${buffer.toString("base64")}`,
         { resource_type: "video", folder: "zol-property" }
       );
-      newVideoUrls.push(result.secure_url);
-    }
+    });
 
-    // 4. Update Property Fields
-    // Text and numeric fields
-    property.title = data.title;
-    property.description = data.description;
-    property.address = data.address;
-    property.type = data.type;
-    property.status = data.status;
-    property.price = Number(data.price);
-    property.area = Number(data.area);
-    property.number = data.number;
-    property.duureg = data.duureg;
-    property.khoroo = data.khoroo;
-    property.davhar = data.davhar ? Number(data.davhar) : undefined;
-    property.roomCount = data.roomCount ? Number(data.roomCount) : undefined;
+    const [imageResults, videoResults] = await Promise.all([
+      Promise.all(uploadImages),
+      Promise.all(uploadVideos),
+    ]);
 
-    // Boolean fields (FormData sends them as strings "true"/"false")
-    property.oirhonTogloomiinTalbai = data.oirhonTogloomiinTalbai === 'true';
-    property.surguuli = data.surguuli === 'true';
-    property.zeel = data.zeel === 'true';
-    property.barter = data.barter === 'true';
-    property.lizing = data.lizing === 'true';
+    const newImageUrls = imageResults.map(r => r.secure_url);
+    const newVideoUrls = videoResults.map(r => r.secure_url);
 
-    // Array field
-    property.features = data.features ? data.features.split(',').map(f => f.trim()).filter(Boolean) : [];
-    
-    // Append new media URLs to existing arrays
-    if (newImageUrls.length > 0) {
-      property.images.push(...newImageUrls);
-    }
-    if (newVideoUrls.length > 0) {
-      property.videos.push(...newVideoUrls);
-    }
-    
-    // 5. Save to Database
-    await property.save();
+    // --- Build Update Object ---
+    const updateFields = {
+      ...(data.title && { title: data.title }),
+      ...(data.description && { description: data.description }),
+      ...(data.address && { address: data.address }),
+      ...(data.type && { type: data.type }),
+      ...(data.status && { status: data.status }),
+      ...(data.price && { price: Number(data.price) }),
+      ...(data.area && { area: Number(data.area) }),
+      ...(data.number && { number: data.number }),
+      ...(data.duureg && { duureg: data.duureg }),
+      ...(data.khoroo && { khoroo: data.khoroo }),
+      ...(data.davhar && { davhar: Number(data.davhar) }),
+      ...(data.roomCount && { roomCount: Number(data.roomCount) }),
 
-    return NextResponse.json({ success: true, property }, { status: 200 });
+      // Booleans
+      oirhonTogloomiinTalbai: data.oirhonTogloomiinTalbai === "true",
+      surguuli: data.surguuli === "true",
+      zeel: data.zeel === "true",
+      barter: data.barter === "true",
+      lizing: data.lizing === "true",
 
+      // Arrays
+      ...(data.features && {
+        features: data.features
+          .split(",")
+          .map(f => f.trim())
+          .filter(Boolean),
+      }),
+    };
+
+    const updateOps = {
+      $set: updateFields,
+      ...(newImageUrls.length > 0 && { $push: { images: { $each: newImageUrls } } }),
+      ...(newVideoUrls.length > 0 && { $push: { videos: { $each: newVideoUrls } } }),
+    };
+
+    // --- Update in one query ---
+    const updatedProperty = await Property.findByIdAndUpdate(id, updateOps, {
+      new: true,
+    });
+
+    return NextResponse.json({ success: true, property: updatedProperty }, { status: 200 });
   } catch (error) {
     console.error("Error in PUT /api/property/[id]:", error);
-    return NextResponse.json({ success: false, error: "Server error during update" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Server error during update" },
+      { status: 500 }
+    );
   }
 }
 
-
 // --- DELETE /api/property/:id ---
-// (This function remains unchanged)
 export async function DELETE(req, { params }) {
   try {
     await connectDB();
     const { id } = params;
     const { userId } = getAuth(req);
 
-    // 1. Authorization Check
     if (!userId) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const property = await Property.findById(id);
 
     if (!property) {
-      return NextResponse.json({ success: false, error: "Property not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Property not found" },
+        { status: 404 }
+      );
     }
 
-    // Ensure the user deleting the property is the owner
     if (property.userId.toString() !== userId) {
-      return NextResponse.json({ success: false, error: "Forbidden: You do not own this property" }, { status: 403 });
+      return NextResponse.json(
+        { success: false, error: "Forbidden: You do not own this property" },
+        { status: 403 }
+      );
     }
 
-    // 2. Cloudinary Cleanup
+    // Collect Cloudinary IDs
     const videoIds = (property.videos || []).map(getPublicIdFromUrl).filter(Boolean);
     const imageIds = (property.images || []).map(getPublicIdFromUrl).filter(Boolean);
-    
-    if (imageIds.length > 0) {
-      await cloudinary.api.delete_resources(imageIds, { resource_type: 'image' });
-    }
-    if (videoIds.length > 0) {
-      await cloudinary.api.delete_resources(videoIds, { resource_type: 'video' });
-    }
 
-    // 3. Database Deletion
+    // Parallel delete
+    await Promise.all([
+      imageIds.length && cloudinary.api.delete_resources(imageIds, { resource_type: "image" }),
+      videoIds.length && cloudinary.api.delete_resources(videoIds, { resource_type: "video" }),
+    ]);
+
+    // Remove from DB
     await Property.findByIdAndDelete(id);
 
-    return NextResponse.json({ success: true, message: "Property deleted successfully" }, { status: 200 });
-
+    return NextResponse.json(
+      { success: true, message: "Property deleted successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error in DELETE /api/property/[id]:", error);
-    return NextResponse.json({ success: false, error: "Server error during deletion" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Server error during deletion" },
+      { status: 500 }
+    );
   }
 }
