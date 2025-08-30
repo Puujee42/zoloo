@@ -75,7 +75,7 @@ export default function FinancialNewsSlider() {
         <div className="max-w-3xl mx-auto">
           {/* Title */}
           <div className="text-center mb-16">
-            <h2 className="font-playfair font-bold text-4xl md:text-5xl text-zolGreen">Санхүүгийн Зөвлөгөө</h2>
+            <h2 className="font-sans-serif font-bold text-4xl md:text-5xl text-zolGreen">Санхүүгийн Зөвлөгөө</h2>
             <p className="mt-4 text-zolDark/70 max-w-2xl mx-auto text-lg leading-relaxed">
               Хөрөнгө оруулалтын боломж, татварын шинэчлэлт болон зах зээлийн тойм мэдээлэлтэй танилцана уу.
             </p>

@@ -47,7 +47,7 @@ const RecentProperties = () => {
 
         {/* Heading */}
         <div className="flex flex-col items-center text-center mb-16">
-          <h2 className="font-playfair font-bold text-4xl md:text-5xl text-zolGreen flex flex-wrap justify-center gap-x-3">
+          <h2 className="font-sans-serif font-bold text-4xl md:text-5xl text-zolGreen flex flex-wrap justify-center gap-x-3">
             {["Шинээр", "нэмэгдсэн"].map((word, i) => (
               <motion.span 
                 key={i} 

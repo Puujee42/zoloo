@@ -61,7 +61,7 @@ const FeaturedProperties = () => {
       {/* Section Header */}
       <div className="flex flex-col items-center text-center mb-20 relative z-10">
         <motion.h2
-          className="font-playfair font-bold text-4xl md:text-5xl text-zolGreen drop-shadow-sm"
+          className="font-sans-serif font-bold text-4xl md:text-5xl text-zolGreen drop-shadow-sm"
           variants={itemVariants}
         >
           Онцлох Үл Хөдлөх Хөрөнгө
