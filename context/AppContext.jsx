@@ -18,19 +18,22 @@ export const AppContextProvider = (props) => {
 
     const [properties, setProperties] = useState([]);
     const [userData, setUserData] = useState(null);
-    const [isSeller, setIsSeller] = useState(false);
+    // REMOVED: The isSeller state is no longer needed.
+    // const [isSeller, setIsSeller] = useState(false);
     const [favorites, setFavorites] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // --- 1. ШИНЭЭР НЭМСЭН ХЭСЭГ: Танилцах цагийн модал удирдах ---
+    // --- 1. Танилцах цагийн модал удирдах ---
     const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
     const [appointmentProperty, setAppointmentProperty] = useState(null);
+
+    // CHANGED: isSeller is now a simple derived constant.
+    // It's true if the 'user' object exists, and false if it's null.
+    const isSeller = !!user;
 
     const openAppointmentModal = (property) => {
         if (!user) {
             toast.error("Цаг товлохын тулд эхлээд нэвтэрнэ үү.");
-            // Эсвэл sign-in хуудас руу үсэргэж болно
-            // router.push('/sign-in');
             return;
         }
         setAppointmentProperty(property);
@@ -59,7 +62,8 @@ export const AppContextProvider = (props) => {
     const fetchBackendUserData = async () => {
         if (!user) return;
         try {
-            setIsSeller(user.publicMetadata?.role === 'seller');
+            // REMOVED: The role check from publicMetadata is gone.
+            // setIsSeller(user.publicMetadata?.role === 'seller');
             const token = await getToken();
             const { data } = await axios.get('/api/user/data', {
                 headers: { Authorization: `Bearer ${token}` }
@@ -116,7 +120,8 @@ export const AppContextProvider = (props) => {
                 fetchBackendUserData();
             } else {
                 setUserData(null);
-                setIsSeller(false);
+                // REMOVED: No longer need to set isSeller to false here.
+                // setIsSeller(false);
                 setFavorites([]);
                 setIsLoading(false);
             }
@@ -128,7 +133,7 @@ export const AppContextProvider = (props) => {
         isLoading,
         getToken,
         router,
-        isSeller,
+        isSeller, // This now provides the derived constant.
         userData,
         properties,
         favorites,
