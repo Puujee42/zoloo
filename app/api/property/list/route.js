@@ -1,21 +1,40 @@
 // /app/api/property/list/route.js
-
 import connectDB from "@/config/db";
-import Property from "@/models/Property"; // CHANGE 1: Renamed 'Product' to 'Property' for clarity
+import Property from "@/models/Property";
 import { NextResponse } from "next/server";
 
 export async function GET(request) {
     try {
         await connectDB();
-        
-        // CHANGE 2: Use the correct model and variable name, and sort by newest
-        const properties = await Property.find({}).sort({ createdAt: -1 });
-        
-        // CHANGE 3: Return the data using the 'properties' key
-        return NextResponse.json({ success: true, properties });
 
+        // ✅ Read query params for pagination
+        const { searchParams } = new URL(request.url);
+        const page = parseInt(searchParams.get("page")) || 1;
+        const limit = parseInt(searchParams.get("limit")) || 20;
+        const skip = (page - 1) * limit;
+
+        // ✅ Fetch data efficiently
+        const [properties, total] = await Promise.all([
+            Property.find({}, "-__v")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(200)
+                .lean()
+                .exec(),
+            Property.countDocuments()
+        ]);
+
+        return NextResponse.json({
+            success: true,
+            page,
+            totalPages: Math.ceil(total / limit),
+            total,
+            properties,
+        });
     } catch (error) {
-        // Best practice: Add a status code to the error response
-        return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+        return NextResponse.json(
+            { success: false, message: error.message },
+            { status: 500 }
+        );
     }
 }

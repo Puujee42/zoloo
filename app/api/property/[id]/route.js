@@ -5,10 +5,9 @@ import connectDB from "@/config/db";
 import Property from "@/models/Property";
 import { getAuth } from "@clerk/nextjs/server";
 import cloudinary from "@/lib/cloudinary";
-import { streamToBuffer } from "@/utils/streamToBuffer";
 
 /**
- * Helper function to extract the public_id from a Cloudinary URL.
+ * Extract Cloudinary public_id from URL
  */
 function getPublicIdFromUrl(url) {
   const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/;
@@ -22,7 +21,6 @@ export async function GET(req, { params }) {
     await connectDB();
     const { id } = params;
 
-    // lean() = faster JSON docs, select = avoid unused fields
     const property = await Property.findById(id).select("-__v").lean();
 
     if (!property) {
@@ -32,7 +30,15 @@ export async function GET(req, { params }) {
       );
     }
 
-    return NextResponse.json({ success: true, property }, { status: 200 });
+    return NextResponse.json(
+      { success: true, property },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "s-maxage=60, stale-while-revalidate=600",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error in GET /api/property/[id]:", error);
     return NextResponse.json(
@@ -56,7 +62,7 @@ export async function PUT(req, { params }) {
       );
     }
 
-    const property = await Property.findById(id).select("userId");
+    const property = await Property.findById(id).select("userId").lean();
     if (!property) {
       return NextResponse.json(
         { success: false, error: "Property not found" },
@@ -66,87 +72,59 @@ export async function PUT(req, { params }) {
 
     if (property.userId.toString() !== userId) {
       return NextResponse.json(
-        { success: false, error: "Forbidden: You do not own this property" },
+        { success: false, error: "Forbidden" },
         { status: 403 }
       );
     }
 
-    // --- Process FormData ---
-    const formData = await req.formData();
-    const data = Object.fromEntries(formData.entries());
+    // --- Parse JSON instead of FormData (faster, client uploads files directly to Cloudinary) ---
+    const body = await req.json();
 
-    // Files
-    const newImages = formData.getAll("images").filter(f => f.size > 0);
-    const newVideos = formData.getAll("videos").filter(f => f.size > 0);
-
-    // Upload in parallel
-    const uploadImages = newImages.map(async (img) => {
-      const buffer = await streamToBuffer(img.stream());
-      return cloudinary.uploader.upload(
-        `data:${img.type};base64,${buffer.toString("base64")}`,
-        { resource_type: "image", folder: "zol-property" }
-      );
-    });
-
-    const uploadVideos = newVideos.map(async (vid) => {
-      const buffer = await streamToBuffer(vid.stream());
-      return cloudinary.uploader.upload(
-        `data:${vid.type};base64,${buffer.toString("base64")}`,
-        { resource_type: "video", folder: "zol-property" }
-      );
-    });
-
-    const [imageResults, videoResults] = await Promise.all([
-      Promise.all(uploadImages),
-      Promise.all(uploadVideos),
-    ]);
-
-    const newImageUrls = imageResults.map(r => r.secure_url);
-    const newVideoUrls = videoResults.map(r => r.secure_url);
-
-    // --- Build Update Object ---
     const updateFields = {
-      ...(data.title && { title: data.title }),
-      ...(data.description && { description: data.description }),
-      ...(data.address && { address: data.address }),
-      ...(data.type && { type: data.type }),
-      ...(data.status && { status: data.status }),
-      ...(data.price && { price: Number(data.price) }),
-      ...(data.area && { area: Number(data.area) }),
-      ...(data.number && { number: data.number }),
-      ...(data.duureg && { duureg: data.duureg }),
-      ...(data.khoroo && { khoroo: data.khoroo }),
-      ...(data.davhar && { davhar: Number(data.davhar) }),
-      ...(data.roomCount && { roomCount: Number(data.roomCount) }),
+      ...(body.title && { title: body.title }),
+      ...(body.description && { description: body.description }),
+      ...(body.address && { address: body.address }),
+      ...(body.type && { type: body.type }),
+      ...(body.status && { status: body.status }),
+      ...(body.price && { price: Number(body.price) }),
+      ...(body.area && { area: Number(body.area) }),
+      ...(body.number && { number: body.number }),
+      ...(body.duureg && { duureg: body.duureg }),
+      ...(body.khoroo && { khoroo: body.khoroo }),
+      ...(body.davhar && { davhar: Number(body.davhar) }),
+      ...(body.roomCount && { roomCount: Number(body.roomCount) }),
 
       // Booleans
-      oirhonTogloomiinTalbai: data.oirhonTogloomiinTalbai === "true",
-      surguuli: data.surguuli === "true",
-      zeel: data.zeel === "true",
-      barter: data.barter === "true",
-      lizing: data.lizing === "true",
+      oirhonTogloomiinTalbai: body.oirhonTogloomiinTalbai === true,
+      surguuli: body.surguuli === true,
+      zeel: body.zeel === true,
+      barter: body.barter === true,
+      lizing: body.lizing === true,
 
       // Arrays
-      ...(data.features && {
-        features: data.features
-          .split(",")
-          .map(f => f.trim())
-          .filter(Boolean),
+      ...(body.features && {
+        features: body.features.filter(Boolean),
       }),
     };
 
     const updateOps = {
       $set: updateFields,
-      ...(newImageUrls.length > 0 && { $push: { images: { $each: newImageUrls } } }),
-      ...(newVideoUrls.length > 0 && { $push: { videos: { $each: newVideoUrls } } }),
+      ...(body.newImageUrls?.length && {
+        $push: { images: { $each: body.newImageUrls } },
+      }),
+      ...(body.newVideoUrls?.length && {
+        $push: { videos: { $each: body.newVideoUrls } },
+      }),
     };
 
-    // --- Update in one query ---
     const updatedProperty = await Property.findByIdAndUpdate(id, updateOps, {
       new: true,
-    });
+    }).lean();
 
-    return NextResponse.json({ success: true, property: updatedProperty }, { status: 200 });
+    return NextResponse.json(
+      { success: true, property: updatedProperty },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error in PUT /api/property/[id]:", error);
     return NextResponse.json(
@@ -170,7 +148,7 @@ export async function DELETE(req, { params }) {
       );
     }
 
-    const property = await Property.findById(id);
+    const property = await Property.findById(id).lean();
 
     if (!property) {
       return NextResponse.json(
@@ -181,23 +159,26 @@ export async function DELETE(req, { params }) {
 
     if (property.userId.toString() !== userId) {
       return NextResponse.json(
-        { success: false, error: "Forbidden: You do not own this property" },
+        { success: false, error: "Forbidden" },
         { status: 403 }
       );
     }
 
-    // Collect Cloudinary IDs
-    const videoIds = (property.videos || []).map(getPublicIdFromUrl).filter(Boolean);
-    const imageIds = (property.images || []).map(getPublicIdFromUrl).filter(Boolean);
+    const videoIds = (property.videos || [])
+      .map(getPublicIdFromUrl)
+      .filter(Boolean);
+    const imageIds = (property.images || [])
+      .map(getPublicIdFromUrl)
+      .filter(Boolean);
 
-    // Parallel delete
+    // --- Parallel delete ---
     await Promise.all([
-      imageIds.length && cloudinary.api.delete_resources(imageIds, { resource_type: "image" }),
-      videoIds.length && cloudinary.api.delete_resources(videoIds, { resource_type: "video" }),
+      Property.findByIdAndDelete(id),
+      imageIds.length &&
+        cloudinary.api.delete_resources(imageIds, { resource_type: "image" }),
+      videoIds.length &&
+        cloudinary.api.delete_resources(videoIds, { resource_type: "video" }),
     ]);
-
-    // Remove from DB
-    await Property.findByIdAndDelete(id);
 
     return NextResponse.json(
       { success: true, message: "Property deleted successfully" },

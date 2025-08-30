@@ -154,13 +154,7 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
                 <PropertyDetail icon={<LandPlot size={18} />} value={area} label="м²" />
               </div>
 
-              <motion.button
-                onClick={toggleView}
-                whileTap={{ scale: 0.95 }}
-                className="mt-4 w-full flex items-center justify-center gap-2 text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors"
-              >
-                <MapPin size={16} /> Газрын зураг харах
-              </motion.button>
+             
             </motion.div>
           )}
         </AnimatePresence>
