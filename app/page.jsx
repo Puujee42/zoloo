@@ -7,31 +7,13 @@ import FeaturedProperties from '@/components/FeaturedProperties'; // The new com
 import Newsletter from '@/components/Newsletter';         // The new, refactored newsletter
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FinancialNewsSlider from '@/components/FinancialNewsSlider';
-
+import Front from '@/components/Front'
 const HomePage = () => {
   return (
     <>
       {/* Navbar is at the top of the page */}
-      <Navbar />
       
-      {/* Main content container with consistent padding */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* 1. Hero section to capture attention */}
-        <HeaderSlider />
-        
-        {/* 2. Featured properties to showcase the best listings */}
-        <FeaturedProperties />
-        
-        {/* 3. Recently added properties to show freshness and activity */}
-        <RecentProperties />
-
-      </main>
-      
-      {/* 4. Newsletter section to capture leads, often placed before the footer */}
-      <FinancialNewsSlider />
-      
+      <Front />
       {/* Footer is at the bottom of the page */}
       <Footer />
     </>

@@ -124,29 +124,8 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center gap-10 text-base">
-          <Link href="/" className={navLinkClass}>Нүүр</Link>
-
-          <div className="relative" ref={dropdownRef}>
-            <button onClick={() => setIsDropdownOpen((p) => !p)} className={`${navLinkClass} flex items-center gap-1`}>
-              Үл хөдлөх{" "}
-              <ChevronDown size={18} className={`transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`} />
-            </button>
-            <AnimatePresence>
-              {isDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute top-full mt-5 w-52 bg-white rounded-lg shadow-xl py-2 z-10 border border-gray-100"
-                >
-                  <Link href="/all-properties" onClick={() => setIsDropdownOpen(false)} className="block px-4 py-2.5 text-sm font-bold text-zolGreen hover:bg-zolGold/10 hover:text-zolGold">Бүх үл хөдлөх</Link>
-                  <div className="h-px bg-gray-200 my-1"></div>
-                  {propertyTypes.map((type) => (
-                    <Link key={type.name} href={type.path} onClick={() => setIsDropdownOpen(false)} className="block px-4 py-2.5 text-sm text-zolDark hover:bg-zolGold/10 hover:text-zolGold">{type.name}</Link>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          
+           
 
           <Link href="/about" className={navLinkClass}>Бидний тухай</Link>
           <Link href="/contact" className={navLinkClass}>Холбоо барих</Link>
