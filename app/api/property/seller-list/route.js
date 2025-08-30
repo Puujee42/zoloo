@@ -1,27 +1,40 @@
-// /app/api/property/seller-list/route.js
 import connectDB from "@/config/db";
 import Property from "@/models/Property";
 import { NextResponse } from "next/server";
+import { auth } from '@clerk/nextjs/server'; // 1. Import Clerk's auth helper
 
 export async function GET(request) {
   try {
+    // 2. Get the authenticated user's ID from Clerk
+    const { userId } = auth();
+
+    // 3. If no user is logged in, return an unauthorized error
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
 
-    // ✅ Pagination
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page")) || 1;
     const limit = parseInt(searchParams.get("limit")) || 20;
     const skip = (page - 1) * limit;
 
-    // ✅ Fetch properties by seller (adjust filter if you want only logged-in seller later)
+    // 4. Create a filter object to use in both queries
+    const queryFilter = { sellerId: userId };
+
+    // 5. Fetch properties AND total count that match the seller's ID
     const [properties, total] = await Promise.all([
-      Property.find({}, "-__v")
+      Property.find(queryFilter, "-__v") // Use the filter
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean()
         .exec(),
-      Property.countDocuments(),
+      Property.countDocuments(queryFilter), // Use the same filter for the count
     ]);
 
     return NextResponse.json({
