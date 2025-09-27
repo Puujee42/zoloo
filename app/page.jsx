@@ -12,8 +12,11 @@ const HomePage = () => {
   return (
     <>
       {/* Navbar is at the top of the page */}
-      
-      <Front />
+      <Navbar />
+      <HeaderSlider />
+      <RecentProperties />
+      <FeaturedProperties />
+      <Newsletter />
       {/* Footer is at the bottom of the page */}
       <Footer />
     </>
