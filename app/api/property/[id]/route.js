@@ -1,7 +1,10 @@
+
+// /app/api/property/[id]/route.js
+
 import { NextResponse } from "next/server";
 import connectDB from "@/config/db";
 import Property from "@/models/Property";
-import { getAuth, clerkClient } from "@clerk/nextjs/server"; // <-- IMPORT clerkClient
+import { getAuth } from "@clerk/nextjs/server";
 import cloudinary from "@/lib/cloudinary";
 
 /**
@@ -28,30 +31,8 @@ export async function GET(req, { params }) {
       );
     }
 
-    // --- START: MODIFICATION TO FETCH CREATOR INFO ---
-    let creator = null;
-    try {
-      // Fetch the user details from Clerk using the userId stored in the property
-      const user = await clerkClient.users.getUser(property.userId);
-      if (user) {
-        // Select only the fields you want to expose to the client
-        creator = {
-          id: user.id,
-          username: user.username,
-          imageUrl: user.imageUrl,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        };
-      }
-    } catch (error) {
-      console.error(`Failed to fetch user from Clerk for userId: ${property.userId}`, error);
-      // If user is not found in Clerk (e.g., deleted account), we can proceed without creator info
-    }
-    // --- END: MODIFICATION ---
-
     return NextResponse.json(
-      // Add the creator object to the response
-      { success: true, property: { ...property, creator } },
+      { success: true, property },
       {
         status: 200,
         headers: {
@@ -199,7 +180,7 @@ export async function DELETE(req, { params }) {
       videoIds.length &&
         cloudinary.api.delete_resources(videoIds, { resource_type: "video" }),
     ]);
-
+    console.log(userId)
     return NextResponse.json(
       { success: true, message: "Property deleted successfully" },
       { status: 200 }

@@ -1,3 +1,4 @@
+
 // /app/api/appointments/route.js
 
 import { NextResponse } from 'next/server';

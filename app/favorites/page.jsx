@@ -1,3 +1,4 @@
+
 // /app/favorites/page.jsx
 'use client'
 

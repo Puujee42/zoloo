@@ -1,3 +1,4 @@
+
 // /app/api/property/list/route.js
 import connectDB from "@/config/db";
 import Property from "@/models/Property";

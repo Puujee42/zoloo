@@ -1,3 +1,4 @@
+
 // components/Banner.jsx
 'use client'
 

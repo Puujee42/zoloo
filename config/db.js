@@ -1,38 +1,22 @@
-// THIS IS THE CORRECT AND FINAL CODE FOR connectDB.js
-import mongoose from 'mongoose';
-
-let cached = global.mongoose;
-if (!cached) {
-    cached = global.mongoose = { conn: null, promise: null };
+import mongoose from "mongoose";
+let cached = global.mongoose
+if(!cached){
+    cached = global.mongoose = { conn: null, promise: null }
 }
-
-async function connectDB() {
-    if (cached.conn) {
-        return cached.conn;
+async function connectDB(){
+    if(cached.conn){
+        return cached.conn
     }
-
-    if (!cached.promise) {
+    if(!cached.promise){
         const opts = {
-            bufferCommands: false,
-            // You confirmed the database name is 'test'
-            dbName: 'test' 
-        };
+            bufferCommands:false
+        }
+        cached.promise = mongoose.connect(`${process.env.MONGODB_URI}/test`,opts).then(mongoose=>{
+            return mongoose
+        })
 
-        // This line is correct and will NOT time out.
-        // It uses the MONGODB_URI directly without changing it.
-        cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
-            return mongoose;
-        });
     }
-
-    try {
-        cached.conn = await cached.promise;
-    } catch (e) {
-        cached.promise = null;
-        throw e;
-    }
-    
-    return cached.conn;
+    cached.conn = await cached.promise
+    return cached.conn
 }
-
-export default connectDB;
+export default connectDB

@@ -1,3 +1,4 @@
+
 // /models/Appointment.js
 
 import mongoose from 'mongoose';

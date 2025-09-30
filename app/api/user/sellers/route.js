@@ -1,3 +1,4 @@
+
 import connectDB from "@/config/db";
 import authSeller from "@/lib/authSeller";
 import Property from "@/models/Property";

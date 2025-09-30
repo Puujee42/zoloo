@@ -34,7 +34,7 @@ export async function POST(req) {
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+   console.log(userId) 
     const formData = await req.formData();
     const body = Object.fromEntries(formData.entries());
 
@@ -72,7 +72,6 @@ export async function POST(req) {
     // --- Prepare property data ---
     const propertyData = {
       userId,
-      agentName: body.agentName, // <--- ЭНЭ ХЭСЭГТ НЭМЭГДСЭН
       title: body.title,
       description: body.description,
       price: Number(body.price),
@@ -97,7 +96,7 @@ export async function POST(req) {
 
     const property = new Property(propertyData);
     await property.save();
-
+    console.log(userId)
     return NextResponse.json(
       { success: true, message: "Үл хөдлөх хөрөнгийг амжилттай нэмлээ", property },
       { status: 201 }

@@ -1,3 +1,4 @@
+
 // /app/seller/page.jsx
 'use client'
 
@@ -6,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
-import { List, Tag, KeyRound, Loader } from 'lucide-react'; // <-- Import Loader
+import { List, Tag, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Simple stat card
@@ -28,9 +29,7 @@ const StatCard = ({ label, value, icon, delay }) => (
 );
 
 const SellerDashboardPage = () => {
-    // FIX #1: Get the loading state from your context. I've named it 'isUserLoading'
-    // to avoid conflict with the listings loading state.
-    const { user, isLoading: isUserLoading } = useAppContext();
+    const { user } = useAppContext();
     const router = useRouter();
 
     const [listings, setListings] = useState([]);
@@ -38,61 +37,32 @@ const SellerDashboardPage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Only fetch listings if we have confirmed there is a user.
-        if (user) {
-            const fetchListings = async () => {
-                setIsLoading(true);
-                try {
-                    const res = await fetch('/api/property/seller-list');
-                    const data = await res.json();
-                    
-                    if (data.success) {
-                        const properties = data.properties;
-                        setListings(properties);
+        const fetchListings = async () => {
+            setIsLoading(true);
+            try {
+                const res = await fetch('/api/property/seller-list');
+                const data = await res.json();
+                if (data.success) {
+                    const properties = data.properties;
+                    setListings(properties);
 
-                        setStats({
-                            total: properties.length,
-                            forSale: properties.filter(p => p.status === 'Зарагдана').length,
-                            forRent: properties.filter(p => p.status === 'Түрээслүүлнэ').length,
-                        });
-                    } else {
-                        toast.error(data.message || "Заруудыг татахад алдаа гарлаа.");
-                    }
-                } catch (err) {
-                    toast.error("Өгөгдөл татах үед алдаа гарлаа.");
-                } finally {
-                    setIsLoading(false);
+                    setStats({
+                        total: properties.length,
+                        forSale: properties.filter(p => p.status === 'Зарагдана').length,
+                        forRent: properties.filter(p => p.status === 'Түрээслүүлнэ').length,
+                    });
+                } else {
+                    toast.error(data.message || "Заруудыг татахад алдаа гарлаа.");
                 }
-            };
-            fetchListings();
-        } else if (!isUserLoading) {
-            // If user loading is finished and there's still no user, stop loading listings.
-            setIsLoading(false);
-        }
-    }, [user, isUserLoading]); // <-- Add isUserLoading as a dependency
+            } catch (err) {
+                toast.error("Өгөгдөл татах үед алдаа гарлаа.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-    // FIX #2: Add a loading state for the user context. This is the main fix.
-    // This will display while your AppContext is fetching the user from Clerk.
-    if (isUserLoading) {
-        return (
-            <div className="min-h-screen bg-zolGreen/5 p-8 flex items-center justify-center">
-                <Loader className="animate-spin text-zolGreen" size={40} />
-            </div>
-        );
-    }
-    
-    // FIX #3: Add a state for when the user is not found after loading.
-    if (!user) {
-         return (
-            <div className="min-h-screen bg-zolGreen/5 p-8 text-center">
-                 <h1 className="text-2xl font-bold text-red-600 mb-4">Хандах эрхгүй</h1>
-                 <p className="text-gray-600">Хэрэглэгчийн мэдээлэл олдсонгүй. Та дахин нэвтэрч орно уу.</p>
-                 <button onClick={() => router.push('/sign-in')} className="mt-6 bg-zolGreen text-white font-bold py-2 px-6 rounded-lg">
-                     Нэвтрэх
-                 </button>
-            </div>
-         );
-    }
+        fetchListings();
+    }, []);
 
     return (
         <div className="min-h-screen bg-zolGreen/5 p-8">
@@ -119,46 +89,56 @@ const SellerDashboardPage = () => {
                 animate="visible"
                 variants={{
                     hidden: { opacity: 0 },
-                    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+                    visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.1 }
+                    }
                 }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
             >
                 {isLoading
-                    ? Array.from({ length: 3 }).map((_, i) => (
-                        <div key={i} className="bg-white h-60 rounded-xl shadow p-4 animate-pulse" />
+                    ? Array.from({ length: 4 }).map((_, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.4, delay: i * 0.1 }}
+                            className="animate-pulse bg-white h-40 rounded-xl shadow"
+                        />
                     ))
                     : listings.length > 0
-                        ? listings.map((listing) => (
+                        ? listings.map((listing, i) => (
                             <motion.div
                                 key={listing._id}
-                                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                                className="bg-white rounded-xl shadow overflow-hidden cursor-pointer group"
+                                variants={{
+                                    hidden: { opacity: 0, y: 20 },
+                                    visible: { opacity: 1, y: 0 }
+                                }}
+                                transition={{ duration: 0.4, delay: i * 0.05 }}
+                                className="bg-white rounded-xl shadow p-4 cursor-pointer hover:shadow-lg transition-shadow"
                                 onClick={() => router.push(`/property/${listing._id}`)}
                             >
-                                <div className="relative h-40">
-                                    <Image
-                                        src={(listing.images && listing.images.length > 0) ? listing.images[0] : '/default-property.jpg'}
-                                        alt={listing.title || 'Property Image'}
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                </div>
-                                <div className="p-4">
-                                    <p className="font-semibold text-gray-900 truncate">{listing.title}</p>
-                                    <p className="text-sm text-zolGreen font-semibold mt-1">
-                                        ₮{(listing.price || 0).toLocaleString()}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">{listing.status}</p>
-                                </div>
+                                <Image
+                                    src={listing.images?.[0] || '/default-property.jpg'}
+                                    alt={listing.title}
+                                    width={300}
+                                    height={180}
+                                    className="rounded-md object-cover mb-3"
+                                />
+                                <p className="font-semibold text-gray-900">{listing.title}</p>
+                                <p className="text-sm text-zolGreen font-semibold mt-1">
+                                    ₮{listing.price.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">{listing.status}</p>
                             </motion.div>
                         ))
                         : <motion.p
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="text-center text-gray-500 col-span-full mt-10"
+                            transition={{ duration: 0.5 }}
+                            className="text-center text-gray-500 col-span-full"
                         >
-                            Одоогоор таны нэмсэн зар байхгүй байна.
+                            Одоогоор зар байхгүй байна.
                         </motion.p>
                 }
             </motion.div>

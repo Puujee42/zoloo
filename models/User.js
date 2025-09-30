@@ -1,19 +1,19 @@
 // models/User.js
 
+import { Schema } from "mongoose";
 import mongoose from "mongoose";
+
 const userSchema = new mongoose.Schema(
-  {
-    _id: { type: String, required: true },   // keep Clerk ID as _id
-    name: { type: String },                  // optional
-    email: { type: String, unique: true },   // optional
-    imageUrl: { type: String },              // optional
-    cartItems: { type: Object, default: {} }
-  },
-  { minimize: false }
+    {
+        _id: { type: String, required: true },
+        name: { type: String, required: true },
+        email: { type: String, required: true, unique: true },
+        imageUrl: { type: String, required: true },
+        cartItems: { type: Object, default: {} }
+    },
+    { minimize: false }
 );
 
-// --- FIX THIS LINE ---
-// Use 'User' (PascalCase) in both places
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.models.user || mongoose.model('user', userSchema);
 
 export default User;
