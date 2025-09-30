@@ -27,23 +27,23 @@ export const syncUserCreation = inngest.createFunction(
 
         await connectDB();
 
-        // **THE FIX IS HERE:**
-        // We use `findOneAndUpdate` with the `upsert` option.
-        // This command tells the database:
-        // 1. TRY to find a document where the `_id` matches the user's Clerk ID.
-        // 2. IF it exists, UPDATE it with the new `userData`.
-        // 3. IF it DOES NOT exist, CREATE a new document using the `userData`.
-        // This makes the function "idempotent" and completely prevents the duplicate key error.
         try {
             await User.findOneAndUpdate(
-            { _id: id },        // The condition to find the user
-            { $set: userData }, // The data to set on the user
-            { upsert: true }    // `upsert: true` creates the document if it doesn't exist
-        );
+                { _id: id },
+                { $set: userData },
+                { upsert: true, new: true } // 'new: true' is good practice, returns the doc
+            );
+            console.log(`User ${id} synced successfully.`);
+            return { message: `User ${id} synced successfully.` };
 
-        return { message: `User ${id} synced successfully.` };
         } catch (error) {
-            return {message:`user $`}
+            // --- THIS IS THE FIX ---
+            console.error(`FAILED to sync user ${id}. Reason:`, error);
+
+            // Re-throwing the error will make the Inngest run fail,
+            // which is the CORRECT behavior when something goes wrong.
+            // This allows you to see the error in the Inngest dashboard and trigger retries.
+            throw error; 
         }
     }
 );
