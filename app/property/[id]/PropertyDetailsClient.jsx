@@ -73,8 +73,16 @@ export default function PropertyDetailsClient({ property, relatedProperties }) {
             <div className="lg:col-span-1 space-y-8">
               <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
                 <h1 className="font-playfair text-3xl font-bold text-zolGreen">{property.title}</h1>
-                <div className="mt-2 flex items-center gap-2 text-zolDark/70"><MapPin size={16} /><p>{`${property.duureg}, ${property.khoroo}, ${property.address}`}</p></div>
-                <p className="font-playfair text-4xl font-bold text-zolGold mt-6 font-safir">{formatPrice(property.price)}</p>
+                <div className="mt-2 flex items-center gap-2 text-zolDark/70">
+                  <MapPin size={16} />
+                  <p>{`${property.duureg}, ${property.khoroo}, ${property.address}`}</p>
+                </div>
+                {/* Show agent name */}
+                <div className="mt-2 text-zolDark/80 font-medium">
+                  <span>Зарын эзэн: </span>
+                  <span className="font-semibold">{property.agentName || "Мэдээлэл байхгүй"}</span>
+                </div>
+               <p className="font-playfair text-4xl font-bold text-zolGold mt-6 font-safir">{formatPrice(property.price)}</p>
 
                 <div className="grid grid-cols-3 gap-6 text-center border-t border-b mt-6 py-6">
                   <div className="flex flex-col items-center gap-1"><ListChecks className="text-zolGreen" /><span className="text-sm font-medium">{getPropertyTypeInMongolian(property.type)}</span></div>

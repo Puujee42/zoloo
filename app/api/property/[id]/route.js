@@ -1,4 +1,3 @@
-
 // /app/api/property/[id]/route.js
 
 import { NextResponse } from "next/server";
@@ -180,7 +179,7 @@ export async function DELETE(req, { params }) {
       videoIds.length &&
         cloudinary.api.delete_resources(videoIds, { resource_type: "video" }),
     ]);
-    console.log(userId)
+
     return NextResponse.json(
       { success: true, message: "Property deleted successfully" },
       { status: 200 }

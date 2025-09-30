@@ -19,7 +19,7 @@ export const AppContextProvider = (props) => {
     const [properties, setProperties] = useState([]);
     const [userData, setUserData] = useState(null);
     // REMOVED: The isSeller state is no longer needed.
-    // const [isSeller, setIsSeller] = useState(false);
+    const [isSeller, setIsSeller] = useState(false);
     const [favorites, setFavorites] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export const AppContextProvider = (props) => {
 
     // CHANGED: isSeller is now a simple derived constant.
     // It's true if the 'user' object exists, and false if it's null.
-    const isSeller = !!user;
+  
 
     const openAppointmentModal = (property) => {
         if (!user) {
@@ -63,7 +63,7 @@ export const AppContextProvider = (props) => {
         if (!user) return;
         try {
             // REMOVED: The role check from publicMetadata is gone.
-            // setIsSeller(user.publicMetadata?.role === 'seller');
+            setIsSeller(user.publicMetadata?.role === 'seller');
             const token = await getToken();
             const { data } = await axios.get('/api/user/data', {
                 headers: { Authorization: `Bearer ${token}` }

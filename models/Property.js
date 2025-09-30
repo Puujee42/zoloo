@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 
 const PropertySchema = new mongoose.Schema({
-  userId: { type: String, required: true }, // Clerk хэрэглэгчийн ID
+  userId: { type: String, required: true },
+  agentName:{type:String}, // Clerk хэрэглэгчийн ID
   title: { type: String, required: true },
   description: String,
   address: String,

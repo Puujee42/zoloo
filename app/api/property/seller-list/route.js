@@ -36,7 +36,7 @@ export async function GET(request) {
         .exec(),
       Property.countDocuments(queryFilter), // Use the same filter for the count
     ]);
-
+    
     return NextResponse.json({
       success: true,
       page,

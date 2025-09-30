@@ -1,9 +1,11 @@
+// This file is likely located at /app/api/properties/route.js
 
 import { NextResponse } from "next/server";
 import connectDB from "@/config/db";
 import Property from "@/models/Property";
 import { getAuth } from "@clerk/nextjs/server";
 import cloudinary from "@/lib/cloudinary";
+import User from "@/models/User"; // <-- 1. NEW: Import the User model
 
 // ✅ Upload helper (unchanged)
 async function uploadFileToCloudinary(file, folder) {
@@ -32,6 +34,11 @@ export async function POST(req) {
         { status: 401 }
       );
     }
+
+    // --- 2. NEW: FETCH THE USER'S NAME ---
+    const user = await User.findById(userId).select("name").lean();
+    const agentName = user ? user.name : "Мэдээлэл байхгүй"; // Set a fallback name
+    // --- END OF NEW CODE ---
 
     const formData = await req.formData();
 
@@ -79,6 +86,7 @@ export async function POST(req) {
     // ✅ Prepare property data safely
     const propertyData = {
       userId,
+      agentName, // <-- 3. NEW: Add the agent's name to the data object
       title: formData.get("title")?.trim(),
       description: formData.get("description")?.trim() || "",
       address: formData.get("address")?.trim() || "",
@@ -105,7 +113,6 @@ export async function POST(req) {
       barter: formData.get("barter") === "true",
       lizing: formData.get("lizing") === "true",
     };
-
     // ✅ Extra validation for Apartment/House
     if (
       ["Apartment", "House"].includes(propertyData.type) &&
