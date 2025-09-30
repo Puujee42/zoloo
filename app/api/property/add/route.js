@@ -72,6 +72,7 @@ export async function POST(req) {
     // --- Prepare property data ---
     const propertyData = {
       userId,
+      agentName: body.agentName, // <--- ЭНЭ ХЭСЭГТ НЭМЭГДСЭН
       title: body.title,
       description: body.description,
       price: Number(body.price),

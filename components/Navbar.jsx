@@ -182,6 +182,7 @@ const Navbar = () => {
           transition={{ duration: 0.6, delay: 0.2, staggerChildren: 0.1 }}
         >
           {[
+            {href:"/",label:"Нүүр хуудас"},
             { href: "/all-properties", label: "Үл хөдлөх" },
             { href: "/about", label: "Бидний тухай" },
             { href: "/contact", label: "Холбоо барих" },

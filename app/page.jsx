@@ -8,6 +8,7 @@ import Newsletter from '@/components/Newsletter';         // The new, refactored
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Front from '@/components/Front'
+import FinancialNewsSlider from '@/components/FinancialNewsSlider';
 const HomePage = () => {
   return (
     <>
@@ -16,7 +17,7 @@ const HomePage = () => {
       <HeaderSlider />
       <RecentProperties />
       <FeaturedProperties />
-      <Newsletter />
+      <FinancialNewsSlider/>
       {/* Footer is at the bottom of the page */}
       <Footer />
     </>

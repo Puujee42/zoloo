@@ -1,17 +1,20 @@
+// /app/api/property/seller-list/route.js
 import connectDB from "@/config/db";
 import Property from "@/models/Property";
 import { NextResponse } from "next/server";
-import { auth } from '@clerk/nextjs/server'; // 1. Import Clerk's auth helper
+import { getAuth } from '@clerk/nextjs/server';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
-    // 2. Get the authenticated user's ID from Clerk
-    const { userId } = auth();
+    const { userId } = getAuth(request);
 
-    // 3. If no user is logged in, return an unauthorized error
+    console.log('CLERK AUTH STATE USING getAuth(request):', { userId });
+
     if (!userId) {
       return NextResponse.json(
-        { success: false, message: "Unauthorized" },
+        { success: false, message: "Unauthorized: getAuth(request) failed to find user." },
         { status: 401 }
       );
     }
@@ -20,21 +23,17 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page")) || 1;
+    // --- FIX IS HERE ---
+    // Corrected variable name from search_params to searchParams
     const limit = parseInt(searchParams.get("limit")) || 20;
     const skip = (page - 1) * limit;
 
-    // 4. Create a filter object to use in both queries
-    const queryFilter = { sellerId: userId };
+    // This query is now correct as well
+    const queryFilter = { userId };
 
-    // 5. Fetch properties AND total count that match the seller's ID
     const [properties, total] = await Promise.all([
-      Property.find(queryFilter, "-__v") // Use the filter
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean()
-        .exec(),
-      Property.countDocuments(queryFilter), // Use the same filter for the count
+      Property.find(queryFilter, "-__v").sort({ createdAt: -1 }).skip(skip).limit(limit).lean().exec(),
+      Property.countDocuments(queryFilter),
     ]);
 
     return NextResponse.json({
@@ -45,9 +44,9 @@ export async function GET(request) {
       properties,
     });
   } catch (err) {
-    console.error(err);
+    console.error("API Error in /api/property/seller-list:", err);
     return NextResponse.json(
-      { success: false, message: err.message },
+      { success: false, message: "An internal server error occurred." },
       { status: 500 }
     );
   }

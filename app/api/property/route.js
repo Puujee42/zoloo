@@ -78,6 +78,9 @@ export async function POST(req) {
     // ✅ Prepare property data safely
     const propertyData = {
       userId,
+      // --- ЭНЭ ХЭСЭГТ НЭМЭГДСЭН ---
+      agentName: formData.get("agentName")?.trim() || "", 
+      
       title: formData.get("title")?.trim(),
       description: formData.get("description")?.trim() || "",
       address: formData.get("address")?.trim() || "",

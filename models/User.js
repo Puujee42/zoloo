@@ -1,6 +1,5 @@
 // models/User.js
 
-import { Schema } from "mongoose";
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -14,6 +13,8 @@ const userSchema = new mongoose.Schema(
     { minimize: false }
 );
 
-const User = mongoose.models.user || mongoose.model('user', userSchema);
+// --- FIX THIS LINE ---
+// Use 'User' (PascalCase) in both places
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;

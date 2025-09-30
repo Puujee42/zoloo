@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { assets } from '@/assets/assets';
-// MODIFICATION: Import the PlayCircle icon
-import { BedDouble, Bath, LandPlot, MapPin, Info, PlayCircle } from 'lucide-react';
+// MODIFICATION: Briefcase icon is imported
+import { BedDouble, Bath, LandPlot, MapPin, Info, PlayCircle, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PropertyCard = ({ property, showMapInitially = false }) => {
@@ -17,23 +17,26 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
   const {
     _id,
     images,
-    videos, // MODIFICATION: Destructure the videos array
+    videos,
     price = "Үнэ асууна уу",
     title = "Гарчиггүй үл хөдлөх",
     address = "Хаяг байхгүй",
-    bedrooms = 0,
-    bathrooms = 0,
     area = "N/A",
-    status = 'Зарагдаж байна'
+    status = 'Зарагдаж байна',
+    creator,
+    // --- MODIFICATION: Destructure agentName ---
+    agentName
   } = property;
 
-  // --- VIDEO HANDLING LOGIC ---
-  // 1. Check if there are any videos.
   const hasVideo = videos && videos.length > 0;
-  // 2. Determine which media to show. Prioritize video.
   const mediaUrl = hasVideo ? videos[0] : (images?.[0] || assets.fallback_property_image);
-  // 3. Determine the type of media for conditional rendering.
   const mediaType = hasVideo ? 'video' : 'image';
+
+  const creatorDisplayName = creator
+    ? (creator.firstName && creator.lastName
+        ? `${creator.firstName} ${creator.lastName}`
+        : creator.username)
+    : 'Нэрээ нууцалсан';
 
   const googleMapsEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
 
@@ -61,7 +64,6 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
       exit={{ opacity: 0, y: 30 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      {/* --- MODIFIED Property Media Section --- */}
       <div className="relative overflow-hidden h-56">
         <motion.div
           initial={{ scale: 1.05 }}
@@ -69,14 +71,13 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
           transition={{ duration: 0.5 }}
           className="h-full w-full"
         >
-          {/* Conditionally render video or image */}
           {mediaType === 'video' ? (
             <video
               src={mediaUrl}
               autoPlay
               loop
               muted
-              playsInline // Essential for autoplay on mobile browsers
+              playsInline
               className="w-full h-full object-cover transition-transform duration-500"
             />
           ) : (
@@ -91,7 +92,6 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
         <span className="absolute top-4 left-4 bg-green-900/70 text-white px-3 py-1 text-xs font-semibold rounded-full backdrop-blur-sm">
           {status}
         </span>
-        {/* Add a visual indicator if a video is present */}
         {hasVideo && (
             <div className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full backdrop-blur-sm" title="Видео бичлэгтэй">
                 <PlayCircle size={20} />
@@ -99,7 +99,6 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
         )}
       </div>
 
-      {/* Content with Animated Views (No changes needed here) */}
       <div className="p-5 flex flex-col flex-grow">
         <AnimatePresence mode="wait">
           {isMapVisible ? (
@@ -150,11 +149,38 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
                 {title}
               </h3>
 
-              <div className="flex items-center justify-between text-gray-700 mt-4 border-t pt-4 text-sm">
-                <PropertyDetail icon={<LandPlot size={18} />} value={area} label="м²" />
+              {/* --- START: MODIFICATION - Display Agent Name or Creator --- */}
+              <div className="flex items-center gap-2 mt-3 text-xs text-gray-500 h-6">
+                {agentName ? (
+                  <div className="flex items-center gap-2" title={`Агент: ${agentName}`}>
+                    <Briefcase size={16} className="text-blue-600 flex-shrink-0" />
+                    <span className="font-semibold truncate text-blue-700">{agentName}</span>
+                  </div>
+                ) : creator ? (
+                  <div className="flex items-center gap-2" title={`Зар нэмсэн: ${creatorDisplayName}`}>
+                    <Image
+                      src={creator.imageUrl || '/default-avatar.png'}
+                      alt={creatorDisplayName}
+                      width={24}
+                      height={24}
+                      className="rounded-full object-cover"
+                    />
+                    <span className="truncate">{creatorDisplayName}</span>
+                  </div>
+                ) : null}
               </div>
+              {/* --- END: MODIFICATION --- */}
 
-             
+              <div className="flex items-center justify-between text-gray-700 mt-2 border-t pt-4 text-sm">
+                <PropertyDetail icon={<LandPlot size={18} />} value={area} label="м²" />
+                <motion.button
+                  onClick={toggleView}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+                >
+                  <MapPin size={16} /> Газрын зураг
+                </motion.button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -163,7 +189,6 @@ const PropertyCard = ({ property, showMapInitially = false }) => {
   );
 };
 
-// Helper component
 const PropertyDetail = ({ icon, value, label }) => (
   <div className="flex items-center gap-2" title={`${value} ${label}`}>
     <span className="text-green-800">{icon}</span>
