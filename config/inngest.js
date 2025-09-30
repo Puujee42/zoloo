@@ -5,97 +5,72 @@ import connectDB from "./db";
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "zulaa" });
 
-// --- USER CREATION (THE FIX) ---
-// This function now handles user creation and prevents duplicate errors.
+// --- USER CREATION ---
 export const syncUserCreation = inngest.createFunction(
-    {
-        id: 'sync-user-from-clerk'
-    }, 
-    {
-        event: 'clerk/user.created'
-    },
-    async ({ event }) => {
-        const { id, first_name, last_name, email_addresses, image_url } = event.data;
-        
-        // Prepare user data object that matches your schema
-        const userData = {
-            _id: id,
-            email: email_addresses[0].email_address,
-            name: `${first_name} ${last_name}`.trim(), // Use trim() as a safeguard
-            imageUrl: image_url
-        };
+  { id: "sync-user-from-clerk" },
+  { event: "user.created" }, // ✅ matches Clerk's actual event
+  async ({ event }) => {
+    const { id, first_name, last_name, email_addresses, image_url } = event.data;
 
-        await connectDB();
+    const userData = {
+      // ✅ use Clerk ID as string (make sure schema supports String _id)
+      _id: id,
+      email: email_addresses?.[0]?.email_address ?? null, // ✅ safe access
+      name: `${first_name ?? ""} ${last_name ?? ""}`.trim(),
+      imageUrl: image_url ?? null,
+    };
 
-        try {
-            await User.findOneAndUpdate(
-                { _id: id },
-                { $set: userData },
-                { upsert: true, new: true } // 'new: true' is good practice, returns the doc
-            );
-            console.log(`User ${id} synced successfully.`);
-            return { message: `User ${id} synced successfully.` };
+    await connectDB();
 
-        } catch (error) {
-            // --- THIS IS THE FIX ---
-            console.error(`FAILED to sync user ${id}. Reason:`, error);
+    try {
+      await User.findOneAndUpdate(
+        { _id: id },
+        { $set: userData },
+        { upsert: true, new: true }
+      );
 
-            // Re-throwing the error will make the Inngest run fail,
-            // which is the CORRECT behavior when something goes wrong.
-            // This allows you to see the error in the Inngest dashboard and trigger retries.
-            throw error; 
-        }
+      console.log(`✅ User ${id} synced successfully.`);
+      return { message: `User ${id} synced successfully.` };
+    } catch (error) {
+      console.error(`❌ FAILED to sync user ${id}. Reason:`, error);
+      throw error; // let Inngest retry
     }
+  }
 );
 
-// --- USER UPDATION (This was already correct) ---
-// This function correctly handles updates to a user's profile.
+// --- USER UPDATION ---
 export const syncUserUpdation = inngest.createFunction(
-    {
-        id: 'update-user-from-clerk'
-    },
-    {
-        event: 'clerk/user.updated'
-    },
-    async ({ event }) => {
-        const { id, first_name, last_name, image_url } = event.data;
-        
-        const userData = {
-            name: `${first_name} ${last_name}`.trim(),
-            imageUrl: image_url
-        };
+  { id: "update-user-from-clerk" },
+  { event: "user.updated" }, // ✅ matches Clerk's actual event
+  async ({ event }) => {
+    const { id, first_name, last_name, image_url } = event.data;
 
-        await connectDB();
+    const userData = {
+      name: `${first_name ?? ""} ${last_name ?? ""}`.trim(),
+      imageUrl: image_url ?? null,
+    };
 
-        // Your logic was correct: find the user by their Clerk ID and update their data.
-        await User.findOneAndUpdate({ _id: id }, userData);
+    await connectDB();
+    await User.findOneAndUpdate({ _id: id }, userData);
 
-        return { message: `User ${id} updated successfully.` };
-    }
+    return { message: `User ${id} updated successfully.` };
+  }
 );
 
-// --- USER DELETION (This was already correct) ---
-// This function correctly handles deleting a user from your database.
+// --- USER DELETION ---
 export const syncUserDeletion = inngest.createFunction(
-    {
-        id: 'delete-user-with-clerk'
-    },
-    {
-        event: 'clerk/user.deleted'
-    },
-    async ({ event }) => {
-        const { id } = event.data;
-        
-        // This check handles a rare edge case where a deleted event might be sent for a user that was never created.
-        if (!id) {
-            return { message: 'Deletion event received without a user ID. Skipping.' };
-        }
+  { id: "delete-user-with-clerk" },
+  { event: "user.deleted" }, // ✅ matches Clerk's actual event
+  async ({ event }) => {
+    const { id } = event.data;
 
-        await connectDB();
-
-        // Your logic was correct: find the user by their Clerk ID and delete them.
-        await User.findOneAndDelete({ _id: id });
-
-        return { message: `User ${id} deleted successfully.` };
+    if (!id) {
+      return { message: "Deletion event received without a user ID. Skipping." };
     }
+
+    await connectDB();
+    await User.findOneAndDelete({ _id: id });
+
+    return { message: `User ${id} deleted successfully.` };
+  }
 );
