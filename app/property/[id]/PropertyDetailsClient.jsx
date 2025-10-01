@@ -9,6 +9,7 @@ import { useAppContext } from '@/context/AppContext';
 import toast from 'react-hot-toast';
 import PropertyMediaGallery from '@/components/PropertyMediaGallery';
 import PropertyCard from '@/components/PropertyCard';
+import Link from 'next/link';
 
 // Appointment Modal (This component remains unchanged)
 const AppointmentModal = ({ property, onClose }) => {
@@ -80,7 +81,13 @@ export default function PropertyDetailsClient({ property, relatedProperties }) {
                 {/* Show agent name */}
                 <div className="mt-2 text-zolDark/80 font-medium">
                   <span>Зарын эзэн: </span>
-                  <span className="font-semibold">{property.agentName || "Мэдээлэл байхгүй"}</span>
+                  <span className="font-semibold"> 
+                    <Link
+                    href={`/agent/${property.userId}`} // <-- 3. Use the agent's unique userId for the URL
+                    className="font-semibold text-blue-600 hover:underline" >
+                      {property.agentName || "Мэдээлэл байхгүй"}
+                      </Link>
+                      </span>
                 </div>
                <p className="font-playfair text-4xl font-bold text-zolGold mt-6 font-safir">{formatPrice(property.price)}</p>
 
