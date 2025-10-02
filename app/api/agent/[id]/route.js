@@ -1,11 +1,15 @@
+// /app/api/agent/[id]/route.js
 import { NextResponse } from 'next/server';
 import Property from '@/models/Property';
 import connectDB from '@/config/db';
 
+// The second argument should be an object containing `params`
 export async function GET(request, { params }) {
   try {
     await connectDB();
-    const agentId = params.id;
+    
+    // Destructure the id from params
+    const { id: agentId } = params;
 
     if (!agentId) {
       return NextResponse.json({ message: 'Agent ID is required' }, { status: 400 });

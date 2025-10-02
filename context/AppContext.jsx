@@ -1,5 +1,5 @@
 'use client'
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth, useUser  } from "@clerk/nextjs";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -13,23 +13,18 @@ export const useAppContext = () => {
 
 export const AppContextProvider = (props) => {
     const router = useRouter();
-    const { user, isLoaded } = useUser();
+    const { user, isLoaded } = useUser ();
     const { getToken } = useAuth();
 
     const [properties, setProperties] = useState([]);
     const [userData, setUserData] = useState(null);
-    // REMOVED: The isSeller state is no longer needed.
-    const [isSeller, setIsSeller] = useState(false);
+    const [isSeller, setIsSeller] = useState(false); // Derived from user.publicMetadata.role === 'seller'
     const [favorites, setFavorites] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // --- 1. Танилцах цагийн модал удирдах ---
+    // Appointment modal management
     const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
     const [appointmentProperty, setAppointmentProperty] = useState(null);
-
-    // CHANGED: isSeller is now a simple derived constant.
-    // It's true if the 'user' object exists, and false if it's null.
-  
 
     const openAppointmentModal = (property) => {
         if (!user) {
@@ -44,7 +39,6 @@ export const AppContextProvider = (props) => {
         setIsAppointmentModalOpen(false);
         setAppointmentProperty(null);
     };
-    // -----------------------------------------------------------
 
     const fetchPropertyData = async () => {
         try {
@@ -55,14 +49,14 @@ export const AppContextProvider = (props) => {
                 toast.error(data.message);
             }
         } catch (error) {
-            // console.error("Үл хөдлөх хөрөнгө татахад алдаа гарлаа:", error.message);
+            console.error("Үл хөдлөх хөрөнгө татахад алдаа гарлаа:", error.message);
         }
     }
 
     const fetchBackendUserData = async () => {
         if (!user) return;
         try {
-            // REMOVED: The role check from publicMetadata is gone.
+            // Set isSeller based on user's publicMetadata role
             setIsSeller(user.publicMetadata?.role === 'seller');
             const token = await getToken();
             const { data } = await axios.get('/api/user/data', {
@@ -120,8 +114,6 @@ export const AppContextProvider = (props) => {
                 fetchBackendUserData();
             } else {
                 setUserData(null);
-                // REMOVED: No longer need to set isSeller to false here.
-                // setIsSeller(false);
                 setFavorites([]);
                 setIsLoading(false);
             }
@@ -133,14 +125,13 @@ export const AppContextProvider = (props) => {
         isLoading,
         getToken,
         router,
-        isSeller, // This now provides the derived constant.
+        isSeller, // Derived: true if user.publicMetadata.role === 'seller'
         userData,
         properties,
         favorites,
         setFavorites,
         toggleFavorite,
-        
-        // --- 2. ШИНЭЭР НЭМСЭН УТГУУДЫГ context-д дамжуулах ---
+        // Appointment modal values
         isAppointmentModalOpen,
         appointmentProperty,
         openAppointmentModal,
