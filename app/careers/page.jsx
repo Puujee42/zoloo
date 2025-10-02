@@ -16,7 +16,7 @@ const HiringPage = () => {
         const res = await fetch("/api/jobs"); // <-- replace with your jobs API
         const data = await res.json();
         if (data.success) {
-          setJobs(data.jobs);
+          setJobs(data.data);
         } else {
           setJobs([]);
         }

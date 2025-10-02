@@ -185,7 +185,8 @@ const Navbar = () => {
             {href:"/",label:"Нүүр хуудас"},
             { href: "/all-properties", label: "Үл хөдлөх" },
             { href: "/about", label: "Бидний тухай" },
-            { href:"/agent", label: "Agents"},
+            { href:"/agent", label: "Манай агентууд"},
+            { href:"/careers",label:"Ажлийн боломжууд"},
             { href: "/contact", label: "Холбоо барих" },
           ].map((link, index) => (
             <motion.div key={link.href} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}>
