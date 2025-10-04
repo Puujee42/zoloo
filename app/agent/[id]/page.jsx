@@ -1,5 +1,3 @@
-// /app/agent/[id]/page.jsx
-"use client"
 import React from 'react';
 import Image from 'next/image';
 import { List, Tag, KeyRound } from 'lucide-react';
@@ -73,7 +71,7 @@ async function fetchAgentData(agentId) {
 
 // --- Main AgentPage Server Component ---
 const AgentPage = async ({ params }) => {
-  const agentId = params.id;
+  const agentId = await params.id;
   const listings = await fetchAgentData(agentId);
 
   if (!listings) {
@@ -127,35 +125,7 @@ const AgentPage = async ({ params }) => {
         )}
       </section>
 
-      {/* Animations and styles */}
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.6s ease forwards;
-        }
-        @keyframes countUp {
-          0% {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-countUp {
-          animation: countUp 0.8s ease forwards;
-        }
-      `}</style>
+    
     </div>
   );
 };

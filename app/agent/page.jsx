@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '@/components/Navbar'; // Adjust path if needed
+import Link from 'next/link';
 
 export default function AgentPage() {
     const [agents, setAgents] = useState([]);
@@ -70,8 +71,10 @@ export default function AgentPage() {
                                         className="w-full h-48 object-cover"
                                     />
                                     <div className="p-5">
+                                        <a href={`/agent/${agent.id}`} className="hover:underline">
                                         <h2 className="text-xl font-semibold mb-1">{agent.name}</h2>
                                         <p className="text-gray-500">{agent.email}</p>
+                                        </a>
                                     </div>
                                 </div>
                             ))}

@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
     await connectDB();
     
     // Destructure the id from params
-    const { id: agentId } = params;
+    const { id: agentId } = await params;
 
     if (!agentId) {
       return NextResponse.json({ message: 'Agent ID is required' }, { status: 400 });
