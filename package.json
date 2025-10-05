@@ -13,7 +13,7 @@
     "@clerk/nextjs": "^6.33.1",
     "@react-google-maps/api": "^2.20.7",
     "axios": "^1.11.0",
-    "clerk": "^0.8.3",
+    "clerk": "^0.6.1",
     "cloudinary": "^2.7.0",
     "date-fns": "^4.1.0",
     "formidable": "^3.5.4",
@@ -26,6 +26,7 @@
     "react-day-picker": "^9.8.1",
     "react-dom": "^19.1.1",
     "react-hot-toast": "^2.5.1",
+    "react-intersection-observer": "^9.16.0",
     "resend": "^6.0.1",
     "styled-jsx": "^5.1.7",
     "supabase": "^2.34.3"

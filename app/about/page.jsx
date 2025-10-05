@@ -9,24 +9,6 @@ import Link from 'next/link';
 import { motion } from "framer-motion";
 import { assets } from '@/assets/assets';
 
-// --- Team Member Card ---
-const TeamMemberCard = ({ image, name, title }) => (
-  <motion.div
-    whileHover={{ y: -6 }}
-    transition={{ type: "spring", stiffness: 200 }}
-    className="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition-all duration-300"
-  >
-    <Image 
-      src={image} 
-      alt={name}
-      width={120}
-      height={120}
-      className="rounded-full mx-auto border-4 border-zolGold shadow-lg"
-    />
-    <h4 className="mt-4 text-lg font-semibold text-zolDark">{name}</h4>
-    <p className="text-sm text-zolDark/70">{title}</p>
-  </motion.div>
-);
 
 const AboutPage = () => {
   return (
@@ -122,46 +104,7 @@ const AboutPage = () => {
           </div>
         </section>
 
-        {/* --- Манай баг --- */}
-        <section className="py-24 bg-white relative">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-16">
-              <motion.h2
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="font-playfair text-3xl md:text-5xl font-bold text-zolGreen"
-              >
-                Манай Мэргэжилтнүүд
-              </motion.h2>
-              <motion.p
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="mt-3 text-lg text-zolDark/70"
-              >
-                Амжилтад хүрэх хөдөлгөгч хүч.
-              </motion.p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
-              {[
-                { name: "Ганболд", title: "Ахлах Агент" },
-                { name: "Сарантуяа", title: "Борлуулалтын Мэргэжилтэн" },
-                { name: "Тэмүүлэн", title: "Түрээсийн Мэргэжилтэн" },
-                { name: "Оюун-Эрдэнэ", title: "Хөрөнгийн Зөвлөх" },
-              ].map((member, i) => (
-                <TeamMemberCard
-                  key={i}
-                  image={assets.fallback_property_image}
-                  name={member.name}
-                  title={member.title}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+       
 
         {/* --- CTA Section --- */}
         <section className="relative bg-gradient-to-r from-zolGreen via-zolDark to-zolGreen text-white py-24">
